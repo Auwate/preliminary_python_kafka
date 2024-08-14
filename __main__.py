@@ -4,9 +4,22 @@ import threading
 from kafka import KafkaConsumer, TopicPartition
 from core.logger import Logger
 from core.consumers import worker, logger
+from core.producers import send_messages
+
+async def create_messages() -> None:
+    tasks: list[asyncio.Task] = [
+            asyncio.create_task(send_messages("Task 1")),
+            asyncio.create_task(send_messages("Task 2")),
+            asyncio.create_task(send_messages("Task 3"))
+        ]
+    await asyncio.gather(*tasks)
 
 async def main():
     try:
+        # Create messages
+        await create_messages()
+        print("All messages sent!")
+
         # Create logger
         log_object = Logger("text.txt")
 
