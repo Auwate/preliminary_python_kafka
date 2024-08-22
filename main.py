@@ -24,8 +24,24 @@ async def main():
         log_object = Logger("text.txt")
 
         # Start coroutines
-        consumer1 = KafkaConsumer(group_id="group_test")
-        consumer2 = KafkaConsumer(group_id="group_test")
+        consumer1 = KafkaConsumer(
+            bootstrap_servers="localhost:9092",
+            group_id="group_test",
+            security_protocol="SSL",
+            ssl_cafile="./secrets/ca.pem",
+            ssl_certfile="./secrets/client-cert.pem",
+            ssl_keyfile="./secrets/client_key.pem",
+            ssl_password="password"
+        )
+        consumer2 = KafkaConsumer(
+            bootstrap_servers="localhost:9092",
+            group_id="group_test",
+            security_protocol="SSL",
+            ssl_cafile="./secrets/ca.pem",
+            ssl_certfile="./secrets/client-cert.pem",
+            ssl_keyfile="./secrets/client_key.pem",
+            ssl_password="password"
+        )
         consumer1.assign([TopicPartition("ASYNC", 0)])
         consumer2.assign([TopicPartition("ASYNC", 1)])
         print(consumer1.assignment())
