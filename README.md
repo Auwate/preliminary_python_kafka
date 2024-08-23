@@ -1,4 +1,4 @@
-# CIARA Kafka Testing w/ Python & `kafka-python-ng`
+# CIARA Kafka Testing w/ `kafka-python-ng`
 
 # SSL
 
