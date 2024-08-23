@@ -2,7 +2,7 @@
 
 # SSL
 
-The following subheaders are the steps you need to take to set up SSL encryption for data in-transit for the Kafka node. This is current **not optional**, as SSL is hardcoded into the `docker-compose.yml` file.
+The following subheaders are the steps you need to take to set up SSL encryption for data in-transit for the Kafka node. This is currently **not optional**, as SSL is hardcoded into the `docker-compose.yml` file.
 
 This assumes you are at the root, being `/preliminary_python_kafka`
 
