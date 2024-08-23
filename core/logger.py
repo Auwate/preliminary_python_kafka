@@ -17,6 +17,12 @@ class Logger(Singleton):
             raise ValueError from exc
 
     def log(self, values: list[str]) -> bool:
+        """
+        Explanation:
+            A function that takes data from a list and logs it
+        Args:
+            values: (list[str]) A list of string elements that will be logged.
+        """
         for value in values:
             print(value, file=self.log_file)
         return True

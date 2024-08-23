@@ -1,20 +1,20 @@
-import asyncio
 from kafka import KafkaProducer
 
-producer = KafkaProducer(
-    bootstrap_servers="localhost:9092",
-    security_protocol="SSL",
-    ssl_cafile="./secrets/ca.pem",
-    ssl_certfile="./secrets/client-cert.pem",
-    ssl_keyfile="./secrets/client_key.pem",
-    ssl_password="password"
-)
 
-async def send_messages(task_name: str) -> None:
+async def send_messages(
+    task_name: str, producer: KafkaProducer, endless_messages: bool
+) -> None:
     """
     Explanation:
-        Send 100 messages
+        Using the producer object, send 100 messages to Kafka.
+    Args:
+        task_name: (str) A string that is used to differentiate messages between producers
+        producer: (KafkaProducer) A producer object that interfaces with the Kafka node
+        endless_messages: (bool) A flag to tell the producer to keep sending messages endlessly
     """
-    for i in range(100):
-        producer.send(topic="ASYNC", value=f"Message {i} from {task_name}".encode())
-    producer.flush()
+    while endless_messages or not endless_messages:
+        for i in range(100):
+            producer.send(topic="ASYNC", value=f"Message {i} from {task_name}".encode())
+        producer.flush()
+        if not endless_messages:
+            break
