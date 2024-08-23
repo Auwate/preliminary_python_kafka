@@ -23,7 +23,7 @@ Miami
 FIU
 CIARA
 Kafka CA Testing
-.
+
 EOF
 ```
 ```
@@ -34,7 +34,7 @@ Miami
 FIU
 CIARA
 172.27.0.2
-.
+
 
 
 EOF
@@ -47,7 +47,7 @@ Miami
 FIU
 CIARA
 172.27.0.1
-.
+
 
 
 EOF
