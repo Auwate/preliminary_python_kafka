@@ -1,11 +1,17 @@
+"""
+Main file that runs the overall logic
+"""
+
 import asyncio
 import threading
-import os
 
 from kafka import KafkaConsumer, KafkaProducer, TopicPartition
-from core.logger import Logger
-from core.consumers import worker, logger
-from core.producers import send_messages
+from .core.logger import Logger
+from .core.consumers import worker, logger
+from .core.producers import send_messages
+from .configs.configs import (
+    ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
+)
 
 # Global variables
 NUM_OF_CONSUMERS = 2
@@ -23,10 +29,10 @@ def create_producer() -> KafkaProducer:
         bootstrap_servers="localhost:9092",
         security_protocol="SSL",
         ssl_check_hostname=False,
-        ssl_cafile=os.path.join(os.path.dirname(__file__), "secrets/ca.pem"),
-        ssl_certfile=os.path.join(os.path.dirname(__file__), "secrets/client-cert.pem"),
-        ssl_keyfile=os.path.join(os.path.dirname(__file__), "secrets/client-key.pem"),
-        ssl_password="password",
+        ssl_cafile=ssl_cafile,
+        ssl_certfile=ssl_certfile,
+        ssl_keyfile=ssl_keyfile,
+        ssl_password=ssl_password,
     )
 
 
@@ -66,14 +72,10 @@ def create_consumers(number_of_consumers: int) -> list[KafkaConsumer]:
                 group_id="group_test",
                 security_protocol="SSL",
                 ssl_check_hostname=False,
-                ssl_cafile=os.path.join(os.path.dirname(__file__), "secrets/ca.pem"),
-                ssl_certfile=os.path.join(
-                    os.path.dirname(__file__), "secrets/client-cert.pem"
-                ),
-                ssl_keyfile=os.path.join(
-                    os.path.dirname(__file__), "secrets/client-key.pem"
-                ),
-                ssl_password="password",
+                ssl_cafile=ssl_cafile,
+                ssl_certfile=ssl_certfile,
+                ssl_keyfile=ssl_keyfile,
+                ssl_password=ssl_password,
             )
         )
     return consumers
