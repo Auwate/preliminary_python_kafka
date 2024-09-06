@@ -9,9 +9,7 @@ from kafka import KafkaConsumer, KafkaProducer, TopicPartition
 from .core.logger import Logger
 from .core.consumers import worker, logger
 from .core.producers import send_messages
-from .configs.configs import (
-    ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
-)
+from .configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
 
 # Global variables
 NUM_OF_CONSUMERS = 2

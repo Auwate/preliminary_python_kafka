@@ -11,10 +11,7 @@ class Logger(Singleton):
     """
 
     def __init__(self, log_file: str) -> None:
-        try:
-            self.log_file = open(log_file, "+a")
-        except Exception as exc:
-            raise ValueError from exc
+        self.log_file = log_file
 
     def log(self, values: list[str]) -> bool:
         """
@@ -23,6 +20,7 @@ class Logger(Singleton):
         Args:
             values: (list[str]) A list of string elements that will be logged.
         """
-        for value in values:
-            print(value, file=self.log_file)
+        with open(self.log_file, "a+", encoding="utf8"):
+            for value in values:
+                print(value, file=self.log_file)
         return True

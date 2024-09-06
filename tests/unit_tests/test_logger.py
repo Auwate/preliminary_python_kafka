@@ -7,11 +7,13 @@ import unittest
 import os
 from ...core.logger import Logger
 
+
 class TestLogger(unittest.TestCase):
     """
     Explanation:
         A testing suite for the features of logger.py
     """
+
     def setUp(self) -> None:
         """
         Explanation:
@@ -25,7 +27,8 @@ class TestLogger(unittest.TestCase):
         Explanation:
             Remove the test file
         """
-        os.remove(self.file_name)
+        if os.path.exists("./test.txt"):
+            os.remove(self.file_name)
 
     def test_singleton(self) -> None:
         """

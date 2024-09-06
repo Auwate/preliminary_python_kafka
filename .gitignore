@@ -1,7 +1,10 @@
 core/__pycache__/
 __pycache__/
+.coverage
 .pytest_cache/
+.tox
 text.txt
 secrets/
 tests/*/__pycache__/
 tests/__pycache__/
+test
