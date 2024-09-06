@@ -1,3 +1,7 @@
+"""
+The consumers module for receiving messages from Kafka and logging it
+"""
+
 import asyncio
 from kafka import KafkaConsumer
 from .logger import Logger

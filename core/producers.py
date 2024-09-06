@@ -1,3 +1,7 @@
+"""
+The producers module that creates messages for Kafka
+"""
+
 from kafka import KafkaProducer
 
 

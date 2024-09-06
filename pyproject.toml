@@ -1,0 +1,22 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "preliminary-python-kafka"
+version = "0.0.1"
+description = "A preliminary Python project that uses kafka-python-ng. Used by FIU CIARA"
+authors = ["CIARA Dev"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+kafka-python-ng = "^2.2.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+flake8 = "^7.1.1"
+black = "^24.8.0"
+tox = "^4.18.0"
+pylint = "^3.2.7"
+coverage = "^7.6.1"
