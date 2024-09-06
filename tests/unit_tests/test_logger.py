@@ -5,7 +5,7 @@ Explanation:
 
 import unittest
 import os
-from ...core.logger import Logger
+from python_kafka.core.logger import Logger
 
 
 class TestLogger(unittest.TestCase):
