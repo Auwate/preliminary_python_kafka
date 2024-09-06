@@ -22,4 +22,4 @@ jobs:
             - name: Run Python tests
               run: |
                 python3 -m poetry install --with dev --no-root
-                python3 -m poetry run tox tests,lint
+                python3 -m poetry run tox -e tests,lint
