@@ -5,7 +5,6 @@ The consumers module for receiving messages from Kafka and logging it
 import asyncio
 from kafka import KafkaConsumer
 from .logger import Logger
-import sys
 
 queue = asyncio.Queue()
 
@@ -27,10 +26,19 @@ def worker(
             the poll() function
         max_records: (int) The maximum amount of records the thread can poll for
     """
+    missed_polls = 0
+
     while True:
+        if missed_polls == 15:
+            return
         data = consumer.poll(timeout_ms=timeout, max_records=max_records)
+        missed_polls += 1
         if data:
-            asyncio.run_coroutine_threadsafe(queue.put(data), loop=loop)
+            missed_polls -= 1
+            try:
+                asyncio.run_coroutine_threadsafe(queue.put(data), loop=loop)
+            except Exception as exc:
+                raise exc
 
 
 async def logger(log_obj: Logger):
@@ -42,12 +50,15 @@ async def logger(log_obj: Logger):
             called text.txt
     """
     print("Created logger")
-    try:
-        while True:
-            print("waiting")
+    while True:
+        print("waiting")
+        try:
             data = await asyncio.wait_for(queue.get(), timeout=10)
+        except TimeoutError as exc:
+            raise TimeoutError("Timeout has been reached for logger") from exc
+        except Exception as exc:
+            raise exc
+        if data:
             print(data)
             data = list(data.values())[0]
             log_obj.log(data)
-    except Exception as exc:
-        raise ValueError from exc

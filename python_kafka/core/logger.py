@@ -20,7 +20,7 @@ class Logger(Singleton):
         Args:
             values: (list[str]) A list of string elements that will be logged.
         """
-        with open(self.log_file, "a+", encoding="utf8"):
+        with open(self.log_file, "a+", encoding="utf8") as file:
             for value in values:
-                print(value, file=self.log_file)
+                print(value, file=file)
         return True
