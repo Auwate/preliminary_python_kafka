@@ -66,7 +66,9 @@ services:
       KAFKA_SSL_KEYSTORE_FILENAME: broker.p12
       KAFKA_SSL_KEYSTORE_TYPE: PKCS12
       KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka_broker_keystore_creds
+      KAFKA_SSL_KEYSTORE_LOCATION: broker.p12
       KAFKA_SSL_KEY_CREDENTIALS: kafka_broker_key_creds
       KAFKA_SSL_TRUSTSTORE_FILENAME: broker.truststore.p12
       KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka_broker_truststore_creds
+      KAFKA_SSL_TRUSTSTORE_LOCATION: broker.truststore.p12
       KAFKA_SSL_TRUSTSTORE_TYPE: PKCS12

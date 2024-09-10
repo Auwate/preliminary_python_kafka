@@ -104,7 +104,6 @@ def create_threads(consumers: list[KafkaConsumer]) -> None:
         )
         thread1.start()
 
-
 async def main():
     """
     Explanation:
@@ -144,3 +143,6 @@ async def main():
 
 
 asyncio.run(main())
+
+if __name__ == "__main__":
+    main()
