@@ -104,6 +104,7 @@ def create_threads(consumers: list[KafkaConsumer]) -> None:
         )
         thread1.start()
 
+
 async def main():
     """
     Explanation:

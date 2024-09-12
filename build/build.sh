@@ -133,3 +133,5 @@ cd ..
 
 sudo chgrp 1000 secrets/ -R
 chmod g=u secrets -R
+
+sudo docker-compose up

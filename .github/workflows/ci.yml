@@ -11,11 +11,22 @@ jobs:
           matrix:
             python-version: ['3.9', '3.10', '3.11', '3.12']
         steps:
-            - uses: actions/checkout@v3
+            - name: Checkout code
+              uses: actions/checkout@v3
+            - name: Install Docker Compose
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y docker-compose
             - name: Setup Python ${{ matrix.python-version }}
               uses: actions/setup-python@v4
               with:
                 python-version: ${{ matrix.python-version }}
+            - name: Set up SSL dependencies and launch docker-compose.yml
+              run: |
+                cd build/
+                chmod 777 build.sh
+                sudo ./build.sh
+                cd ..
             - name: Install Python dependencies
               run: |
                 python3 -m pip install poetry
@@ -23,3 +34,7 @@ jobs:
               run: |
                 python3 -m poetry install --with dev --no-root
                 python3 -m poetry run tox -e tests,lint
+            - name: Tear down
+              if: always()
+              run: |
+                docker-compose down
