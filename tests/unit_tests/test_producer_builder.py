@@ -1,7 +1,7 @@
 """
 Testing class for ProducerBuilder
 """
-from work.kafka.preliminary_python_kafka.python_kafka.core.kafka.producer.producer_builder import (
+from python_kafka.core.kafka.producer.producer_builder import (
     ProducerBuilder
 )
 from python_kafka.core.kafka.producer.producer import Producer
