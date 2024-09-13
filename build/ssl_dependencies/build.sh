@@ -82,7 +82,7 @@ CIARA
 EOF
 )
 
-cd ..
+cd ../..
 
 if [ -d "./secrets" ]; then
     rm -rf secrets/

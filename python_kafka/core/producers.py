@@ -2,7 +2,7 @@
 The producers module that creates messages for Kafka
 """
 
-from kafka import KafkaProducer, KafkaAdminClient, errors as Errors
+from kafka import KafkaProducer, errors as Errors
 from kafka.producer.future import FutureRecordMetadata
 
 

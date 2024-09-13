@@ -6,10 +6,15 @@ import asyncio
 import threading
 
 from kafka import KafkaConsumer, KafkaProducer, TopicPartition
-from .core.logger import Logger
-from .core.consumers import worker, logger
-from .core.producers import send_messages
-from .configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
+from python_kafka.core.logger import Logger
+from python_kafka.core.consumers import worker, logger
+from python_kafka.core.producers import send_messages
+from python_kafka.configs.configs import (
+    ssl_cafile,
+    ssl_certfile,
+    ssl_keyfile,
+    ssl_password,
+)
 
 # Global variables
 NUM_OF_CONSUMERS = 2
@@ -105,12 +110,27 @@ def create_threads(consumers: list[KafkaConsumer]) -> None:
         thread1.start()
 
 
+def spawn_producer_container(producers: int) -> tuple[bool, Exception]:
+    """
+    Spawn the producer Docker container
+    """
+    return False, None
+
+
+def spawn_consumer_container(consumers: int) -> tuple[bool, Exception]:
+    """
+    Spawn the consumer Docker container
+    """
+    return False, None
+
+
 async def main():
     """
     Explanation:
         The main method is responsible for generating messages, creating consumers, preparing
         the threads to poll for messages, and scheduling the async logging functions.
     """
+
     try:
         # Create messages
         producer: KafkaProducer = create_producer()

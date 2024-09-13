@@ -1,20 +1,16 @@
 """
-The builder class for Producer
+The builder class for Admin.
 """
 
-from .producer import Producer
+from .admin import Admin
 
 
-class ProducerBuilder:
+class AdminBuilder:
     """
-    A builder class for creating and configuring instances of the `Producer` class.
+    A builder class for creating and configuring instances of the `Admin` class.
 
     Attributes:
     -----------
-    _topic : str
-        The Kafka topic where messages will be sent (default: "").
-    _volume : int
-        The number of messages to send (default: 0).
     _bootstrap_servers : str
         The Kafka bootstrap servers (default: "localhost:9092").
     _security_protocol : str
@@ -24,95 +20,33 @@ class ProducerBuilder:
 
     Methods:
     --------
-    topic(topic: str) -> "ProducerBuilder"
-        Sets the Kafka topic to send messages to. Raises ValueError if the topic is not a string.
-
-    volume(volume: int) -> "ProducerBuilder"
-        Sets the number of messages to send. Raises ValueError if volume is not an integer.
-
-    bootstrap_servers(bootstrap_servers: str) -> "ProducerBuilder"
+    bootstrap_servers(bootstrap_servers: str) -> "AdminBuilder"
         Sets the Kafka bootstrap server(s). Raises ValueError if bootstrap_servers is not a string.
 
-    security_protocol(security_protocol: str) -> "ProducerBuilder"
+    security_protocol(security_protocol: str) -> "AdminBuilder"
         Sets the security protocol for Kafka (e.g., "SSL", "PLAINTEXT").
         Raises ValueError if security_protocol is not a string.
 
-    ssl_check_hostname(ssl_check_hostname: bool) -> "ProducerBuilder"
+    ssl_check_hostname(ssl_check_hostname: bool) -> "AdminBuilder"
         Sets whether to check the hostname in SSL certificates.
         Raises ValueError if ssl_check_hostname is not a boolean.
 
-    build() -> Producer
-        Creates a new `Producer` instance with the configured parameters.
+    build() -> Admin
+        Creates a new `Admin` instance with the configured parameters.
     """
 
     def __init__(self):
         """
-        Initializes the ProducerBuilder with default values for all attributes:
-        - topic: an empty string
-        - volume: 0
+        Initializes the AdminBuilder with default values for all attributes:
         - bootstrap_servers: "localhost:9092"
         - security_protocol: "SSL"
         - ssl_check_hostname: False
         """
-        self._topic = "Test"
-        self._volume = 1_000
         self._bootstrap_servers = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False
 
-    def topic(self, topic: str) -> "ProducerBuilder":
-        """
-        Sets the Kafka topic to send messages to.
-
-        Parameters:
-        -----------
-        topic : str
-            The topic to set.
-
-        Returns:
-        --------
-        ProducerBuilder:
-            The current instance of the factory for method chaining.
-
-        Raises:
-        -------
-        ValueError:
-            If the topic is not of type str.
-        """
-        if not topic:
-            return self
-        if not isinstance(topic, str):
-            raise ValueError("Topic is not of type str.")
-        self._topic = topic
-        return self
-
-    def volume(self, volume: int) -> "ProducerBuilder":
-        """
-        Sets the number of messages to send.
-
-        Parameters:
-        -----------
-        volume : int
-            The number of messages to send.
-
-        Returns:
-        --------
-        ProducerBuilder:
-            The current instance of the factory for method chaining.
-
-        Raises:
-        -------
-        ValueError:
-            If volume is not of type int.
-        """
-        if not volume:
-            return self
-        if not isinstance(volume, int):
-            raise ValueError("Volume is not of type int.")
-        self._volume = volume
-        return self
-
-    def bootstrap_servers(self, bootstrap_servers: str) -> "ProducerBuilder":
+    def bootstrap_servers(self, bootstrap_servers: str) -> "AdminBuilder":
         """
         Sets the Kafka bootstrap server(s).
 
@@ -123,7 +57,7 @@ class ProducerBuilder:
 
         Returns:
         --------
-        ProducerBuilder:
+        AdminBuilder:
             The current instance of the factory for method chaining.
 
         Raises:
@@ -138,7 +72,7 @@ class ProducerBuilder:
         self._bootstrap_servers = bootstrap_servers
         return self
 
-    def security_protocol(self, security_protocol: str) -> "ProducerBuilder":
+    def security_protocol(self, security_protocol: str) -> "AdminBuilder":
         """
         Sets the security protocol for connecting to Kafka.
 
@@ -149,7 +83,7 @@ class ProducerBuilder:
 
         Returns:
         --------
-        ProducerBuilder:
+        AdminBuilder:
             The current instance of the factory for method chaining.
 
         Raises:
@@ -164,7 +98,7 @@ class ProducerBuilder:
         self._security_protocol = security_protocol
         return self
 
-    def ssl_check_hostname(self, ssl_check_hostname: bool) -> "ProducerBuilder":
+    def ssl_check_hostname(self, ssl_check_hostname: bool) -> "AdminBuilder":
         """
         Sets whether to check the hostname in SSL certificates.
 
@@ -175,7 +109,7 @@ class ProducerBuilder:
 
         Returns:
         --------
-        ProducerBuilder:
+        AdminBuilder:
             The current instance of the factory for method chaining.
 
         Raises:
@@ -190,19 +124,15 @@ class ProducerBuilder:
         self._ssl_check_hostname = ssl_check_hostname
         return self
 
-    def build(self) -> Producer:
+    def build(self) -> Admin:
         """
-        Builds and returns a `Producer` instance with the configured parameters.
+        Builds and returns an `Admin` instance with the configured parameters.
 
         Returns:
         --------
-        Producer:
-            A new instance of the `Producer` class.
+        Admin:
+            A new instance of the `Admin` class.
         """
-        return Producer(
-            volume=self._volume,
-            topic=self._topic,
-            bs_servers=self._bootstrap_servers,
-            sec_protocol=self._security_protocol,
-            check_hostname=self._ssl_check_hostname,
+        return Admin(
+            self._bootstrap_servers, self._security_protocol, self._ssl_check_hostname
         )

@@ -39,7 +39,7 @@ class Producer:
         Returns a tuple indicating success or failure and an exception, if any.
     """
 
-    def __init__(   # pylint: disable=R0913
+    def __init__(  # pylint: disable=R0913
         self,
         volume: int,
         topic: str,
@@ -53,7 +53,7 @@ class Producer:
         Parameters:
         -----------
         volume : int
-            The number of messages to send.
+            The number of messages to send. Assigned in the builder function
         topic : str
             The topic to send the messages to.
         bs_servers : str
@@ -77,7 +77,7 @@ class Producer:
 
     @property
     def volume(self) -> int:
-        """Returns the number of messages to send."""
+        """Returns the volume of messages the producer will send"""
         return self._volume
 
     @property
@@ -90,7 +90,7 @@ class Producer:
         """Returns the KafkaProducer instance."""
         return self._producer
 
-    def send_messages(self) -> tuple[bool, Exception]:
+    async def send_messages(self) -> tuple[bool, Exception]:
         """
         Sends a stream of messages to the Kafka topic.
 
@@ -107,7 +107,11 @@ class Producer:
         """
         for i in range(self.volume):
             try:
-                self.producer.send(topic=self.topic, value=f"Message {i}\n".encode())
+                await self.producer.send(
+                    topic=self.topic, value=f"Message {i}\n".encode()
+                )
             except errors.KafkaTimeoutError as exc:
                 return False, exc
+
+        self.producer.flush()
         return True, None
