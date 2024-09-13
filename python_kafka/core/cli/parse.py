@@ -4,9 +4,9 @@ A command-line interface for configuring Kafka producers and consumers.
 This module provides functionality to create a command-line argument parser and
 to process the arguments for setting up the number of Kafka producers and consumers.
 
-The `CLIOptions` class allows you to specify the amount of producers and consumers
-through command-line arguments and ensures that these values are properly validated
-and converted to integers.
+The `CLIOptions` class allows you to specify the number of producers, consumers, 
+bootstrap servers, and other properties through command-line arguments and ensures that 
+these values are properly validated and converted.
 
 Functions:
 -----------
@@ -16,7 +16,7 @@ create_parser() -> argparse.ArgumentParser
 Classes:
 ---------
 CLIOptions
-    A class for handling command-line arguments for Kafka producers and consumers.
+    A class for handling command-line arguments for Kafka configuration.
 
     Attributes:
     -----------
@@ -24,6 +24,12 @@ CLIOptions
         The number of Kafka producers (default: 0).
     _consumers : int
         The number of Kafka consumers (default: 0).
+    _bootstrap_server : str
+        The Kafka cluster location (default: 'localhost:9092').
+    _security_protocol : str
+        The security protocol for Kafka communication (default: 'SSL').
+    _ssl_check_hostname : bool
+        Whether to check the hostname in SSL communication (default: False).
 
     Methods:
     --------
@@ -33,8 +39,8 @@ CLIOptions
     read_args(parser: argparse.ArgumentParser, args: list[str]) -> None
         Reads and parses command-line arguments using the provided parser.
 
-    evaluate_input(parser: argparse.ArgumentParser, args: list[str]) -> None
-        Validates and sets the producer and consumer values from the parsed arguments.
+    evaluate_input(args: argparse.Namespace) -> None
+        Validates and sets the producer, consumer, and other values from the parsed arguments.
 
     producers() -> int
         Returns the number of producers.
@@ -42,11 +48,29 @@ CLIOptions
     consumers() -> int
         Returns the number of consumers.
 
-    producers.setter(producers: str) -> None
+    bootstrap_server() -> str
+        Returns the bootstrap server.
+
+    security_protocol() -> str
+        Returns the security protocol.
+
+    ssl_check_hostname() -> bool
+        Returns the SSL check hostname flag.
+
+    producers.setter(producers: int) -> None
         Sets the number of producers after validating the input.
 
-    consumers.setter(consumers: str) -> None
+    consumers.setter(consumers: int) -> None
         Sets the number of consumers after validating the input.
+
+    bootstrap_server.setter(bootstrap_server: str) -> None
+        Sets the bootstrap server after validating the input.
+
+    security_protocol.setter(security_protocol: str) -> None
+        Sets the security protocol after validating the input.
+
+    ssl_check_hostname.setter(ssl_check_hostname: bool) -> None
+        Sets the SSL check hostname flag after validating the input.
 """
 
 import argparse
@@ -59,10 +83,11 @@ def create_parser() -> argparse.ArgumentParser:
     Returns:
     --------
     argparse.ArgumentParser
-        The argument parser with predefined arguments for producers and consumers.
+        The argument parser with predefined arguments for producers, consumers, 
+        bootstrap server, security protocol, and SSL hostname check.
     """
     parser = argparse.ArgumentParser(
-        description="Configure Kafka producers and consumers."
+        description="Configure Kafka producers, consumers, and other settings."
     )
 
     parser.add_argument(
@@ -78,13 +103,34 @@ def create_parser() -> argparse.ArgumentParser:
         "This also affects the number of loggers, as consumers log information.",
         type=int,
     )
+    parser.add_argument(
+        "-BS",
+        "--bootstrap-server",
+        help="Type: str | Optional | The location of the Kafka cluster (default: localhost:9092).",
+        type=str,
+    )
+    parser.add_argument(
+        "-SP",
+        "--security-protocol",
+        help="Type: str | Optional | The security protocol to communicate with the Kafka cluster "
+        "(default: SSL).",
+        type=str,
+    )
+    parser.add_argument(
+        "-SCHN",
+        "--ssl-check-hostname",
+        help="Type: bool | Optional | A flag that tells Kafka to check that the incoming message "
+        "is in the same network (default: False).",
+        type=bool,
+    )
 
     return parser
 
 
 class CLIOptions:
     """
-    A class to handle and validate command-line arguments for Kafka producers and consumers.
+    A class to handle and validate command-line arguments for Kafka producers, consumers, 
+    and additional settings like bootstrap server, security protocol, and SSL hostname check.
 
     Attributes:
     -----------
@@ -92,6 +138,12 @@ class CLIOptions:
         The number of Kafka producers.
     _consumers : int
         The number of Kafka consumers.
+    _bootstrap_server : str
+        The Kafka cluster location.
+    _security_protocol : str
+        The security protocol for Kafka communication.
+    _ssl_check_hostname : bool
+        Whether to check the hostname in SSL communication.
 
     Methods:
     --------
@@ -101,8 +153,8 @@ class CLIOptions:
     read_args(parser: argparse.ArgumentParser, args: list[str]) -> None
         Reads and parses command-line arguments using the provided parser.
 
-    evaluate_input(parser: argparse.ArgumentParser, args: list[str]) -> None
-        Validates and assigns producer and consumer values from the parsed arguments.
+    evaluate_input(args: argparse.Namespace) -> None
+        Validates and assigns producer, consumer, and additional settings from the parsed arguments.
 
     producers() -> int
         Returns the number of producers.
@@ -110,11 +162,29 @@ class CLIOptions:
     consumers() -> int
         Returns the number of consumers.
 
-    producers.setter(producers: str) -> None
+    bootstrap_server() -> str
+        Returns the bootstrap server.
+
+    security_protocol() -> str
+        Returns the security protocol.
+
+    ssl_check_hostname() -> bool
+        Returns the SSL check hostname flag.
+
+    producers.setter(producers: int) -> None
         Sets the number of producers after validating the input.
 
-    consumers.setter(consumers: str) -> None
+    consumers.setter(consumers: int) -> None
         Sets the number of consumers after validating the input.
+
+    bootstrap_server.setter(bootstrap_server: str) -> None
+        Sets the bootstrap server after validating the input.
+
+    security_protocol.setter(security_protocol: str) -> None
+        Sets the security protocol after validating the input.
+
+    ssl_check_hostname.setter(ssl_check_hostname: bool) -> None
+        Sets the SSL check hostname flag after validating the input.
     """
 
     def __init__(
@@ -132,6 +202,9 @@ class CLIOptions:
         """
         self._consumers = 0
         self._producers = 0
+        self._bootstrap_server = "localhost:9092"
+        self._security_protocol = "SSL"
+        self._ssl_check_hostname = False
         self.read_args(parser, args)
 
     def read_args(self, parser: argparse.ArgumentParser, args: list[str]) -> None:
@@ -152,12 +225,11 @@ class CLIOptions:
 
     def evaluate_input(self, args: argparse.Namespace) -> None:
         """
-        Validates and assigns the values of producers and consumers from the parsed arguments.
+        Validates and assigns the values of producers, consumers, and other settings
+        from the parsed arguments.
 
         Parameters:
         -----------
-        parser : argparse.ArgumentParser
-            The argument parser used.
         args : argparse.Namespace
             The parsed command-line arguments.
         """
@@ -166,6 +238,15 @@ class CLIOptions:
 
         if args.consumers is not None:
             self.consumers = args.consumers
+
+        if args.bootstrap_server is not None:
+            self.bootstrap_server = args.bootstrap_server
+
+        if args.security_protocol is not None:
+            self.security_protocol = args.security_protocol
+
+        if args.ssl_check_hostname is not None:
+            self.ssl_check_hostname = args.ssl_check_hostname
 
     @property
     def producers(self) -> int:
@@ -191,6 +272,42 @@ class CLIOptions:
         """
         return self._consumers
 
+    @property
+    def bootstrap_server(self) -> str:
+        """
+        Returns the bootstrap server address.
+
+        Returns:
+        --------
+        str
+            The Kafka cluster address (bootstrap server).
+        """
+        return self._bootstrap_server
+
+    @property
+    def security_protocol(self) -> str:
+        """
+        Returns the security protocol used for communication.
+
+        Returns:
+        --------
+        str
+            The security protocol for Kafka communication (e.g., SSL, PLAINTEXT).
+        """
+        return self._security_protocol
+
+    @property
+    def ssl_check_hostname(self) -> bool:
+        """
+        Returns the SSL hostname verification flag.
+
+        Returns:
+        --------
+        bool
+            Whether the SSL hostname verification is enabled.
+        """
+        return self._ssl_check_hostname
+
     @producers.setter
     def producers(self, producers: int) -> None:
         """
@@ -199,12 +316,12 @@ class CLIOptions:
         Parameters:
         -----------
         producers : int
-            The number of producers. Must be a positive integer.
+            The number of producers. Must be a non-negative integer.
 
         Raises:
         -------
         ValueError
-            If the input is not a positive integer.
+            If the input is not a non-negative integer.
         """
         if not isinstance(producers, int) or producers < 0:
             raise ValueError("-P (--producers) must be a non-negative integer.")
@@ -218,13 +335,70 @@ class CLIOptions:
         Parameters:
         -----------
         consumers : int
-            The number of consumers. Must be a positive integer.
+            The number of consumers. Must be a non-negative integer.
 
         Raises:
         -------
         ValueError
-            If the input is not a positive integer.
+            If the input is not a non-negative integer.
         """
         if not isinstance(consumers, int) or consumers < 0:
             raise ValueError("-C (--consumers) must be a non-negative integer.")
         self._consumers = consumers
+
+    @bootstrap_server.setter
+    def bootstrap_server(self, bootstrap_server: str) -> None:
+        """
+        Sets the bootstrap server address after validating the input.
+
+        Parameters:
+        -----------
+        bootstrap_server : str
+            The Kafka cluster address.
+
+        Raises:
+        -------
+        ValueError
+            If the bootstrap server address is not a valid string.
+        """
+        if not isinstance(bootstrap_server, str) or not bootstrap_server.strip():
+            raise ValueError("-BS (--bootstrap-server) must be a non-empty string.")
+        self._bootstrap_server = bootstrap_server
+
+    @security_protocol.setter
+    def security_protocol(self, security_protocol: str) -> None:
+        """
+        Sets the security protocol after validating the input.
+
+        Parameters:
+        -----------
+        security_protocol : str
+            The security protocol (e.g., SSL, PLAINTEXT).
+
+        Raises:
+        -------
+        ValueError
+            If the security protocol is not a valid string.
+        """
+        if not isinstance(security_protocol, str) or not security_protocol.strip():
+            raise ValueError("-SP (--security-protocol) must be a non-empty string.")
+        self._security_protocol = security_protocol
+
+    @ssl_check_hostname.setter
+    def ssl_check_hostname(self, ssl_check_hostname: bool) -> None:
+        """
+        Sets the SSL hostname verification flag after validating the input.
+
+        Parameters:
+        -----------
+        ssl_check_hostname : bool
+            The SSL hostname verification flag.
+
+        Raises:
+        -------
+        ValueError
+            If the SSL check hostname flag is not a boolean.
+        """
+        if not isinstance(ssl_check_hostname, bool):
+            raise ValueError("-SCHN (--ssl-check-hostname) must be a boolean.")
+        self._ssl_check_hostname = ssl_check_hostname
