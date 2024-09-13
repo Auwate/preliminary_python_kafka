@@ -2,81 +2,62 @@
 Main file that runs the overall logic
 """
 
-import subprocess
 import os
+import docker
 from python_kafka.core.cli.parse import CLIOptions
 
+def build_image(
+    client: docker.DockerClient,
+    path: str,
+    dockerfile: str
+) -> tuple[bool, str, Exception]:
+    try:
+        image, logs = client.images.build(
+            path = path,
+            dockerfile = dockerfile
+        )
 
-def spawn_producer_container(producers: int) -> tuple[bool, Exception]:
+        for n in logs:
+            print(n)
+
+    except Exception as exc:  # pylint: disable=W0718
+        return False, None, exc
+
+    return True, image, None
+
+def spawn_producer_container(
+    client: docker.DockerClient, producers: int, image: str
+) -> tuple[bool, Exception]:
     """
     Spawn the producer Docker container
     """
     try:
-        subprocess.run(
-            [
-                "docker",
-                "build",
-                "-t",
-                "producer-container",
-                os.path.join(
-                    os.path.dirname(os.path.dirname(__file__)),
-                    "build/containers/producers/.",
-                ),
-            ],
-            check=True,
+        client.containers.run(
+            image=image,
+            network="kafka_network",
+            environment={"PRODUCERS": str(producers)},
         )
-        subprocess.run(
-            [
-                "docker",
-                "run",
-                "-d",
-                "producer-container",
-                "--network",
-                "kafka_network",
-                "-e",
-                "PRODUCERS",
-                str(producers),
-            ],
-            check=True,
-        )
+
     except Exception as exc:  # pylint: disable=W0718
         return False, exc
 
     return True, None
 
 
-def spawn_consumer_container(consumers: int) -> tuple[bool, Exception]:
+def spawn_consumer_container(
+    client: docker.DockerClient, consumers: int, image: str
+) -> tuple[bool, Exception]:
     """
     Spawn the consumer Docker container
     """
     try:
-        subprocess.run(
-            [
-                "docker",
-                "build",
-                "-t",
-                "consumer-container",
-                os.path.join(
-                    os.path.dirname(os.path.dirname(__file__)),
-                    "build/containers/consumers/.",
-                ),
-            ],
-            check=True,
+
+        client.containers.run(
+            image=image,
+            network="kafka_network",
+            environment={"PRODUCERS": str(consumers)},
         )
-        subprocess.run(
-            [
-                "docker",
-                "run",
-                "-d",
-                "consumer-container",
-                "--network",
-                "kafka_network",
-                "-e",
-                "CONSUMERS",
-                str(consumers),
-            ],
-            check=True,
-        )
+
     except Exception as exc:  # pylint: disable=W0718
         return False, exc
 
@@ -91,20 +72,45 @@ def main():
     """
 
     cli = CLIOptions()
+    client = docker.from_env()
 
-    success, exc = spawn_producer_container(cli.producers)
+    print("Producer Logs\n------\n")
+
+    success, image, exc = build_image(
+        client,
+        os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "build/containers/producers/",
+        ),
+        "Dockerfile"
+    )
+
+    #success, exc = spawn_producer_container(client, cli.producers, image)
 
     if not success:
         if exc:
             raise exc
         print("An error occurred in spawn_producer_container")
 
-    success, exc = spawn_consumer_container(cli.consumers)
+    print("Consumer Logs\n------\n")
+
+    success, image, exc = build_image(
+        client,
+        os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "build/containers/consumers/",
+        ),
+        "Dockerfile"
+    )
+
+    #success, exc = spawn_consumer_container(client, cli.consumers)
 
     if not success:
         if exc:
             raise exc
         print("An error occurred in spawn_consumer_container")
+
+    print("Results\n------\n")
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 kafka-python-ng = "^2.2.2"
+docker = "^7.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
