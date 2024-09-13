@@ -84,7 +84,7 @@ def create_parser() -> argparse.ArgumentParser:
     --------
     argparse.ArgumentParser
         The argument parser with predefined arguments for producers, consumers, 
-        bootstrap server, security protocol, and SSL hostname check.
+        bootstrap server, security protocol, SSL hostname check, group, and topic.
     """
     parser = argparse.ArgumentParser(
         description="Configure Kafka producers, consumers, and other settings."
@@ -99,8 +99,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-C",
         "--consumers",
-        help="Type: int | Specify the number of consumers that will read messages from Kafka. "
-        "This also affects the number of loggers, as consumers log information.",
+        help="Type: int | Specify the number of consumers that will read messages from Kafka.",
         type=int,
     )
     parser.add_argument(
@@ -112,19 +111,30 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-SP",
         "--security-protocol",
-        help="Type: str | Optional | The security protocol to communicate with the Kafka cluster "
-        "(default: SSL).",
+        help="Type: str | Optional | The security protocol for Kafka communication (default: SSL).",
         type=str,
     )
     parser.add_argument(
         "-SCHN",
         "--ssl-check-hostname",
-        help="Type: bool | Optional | A flag that tells Kafka to check that the incoming message "
-        "is in the same network (default: False).",
+        help="Type: bool | Optional | A flag to enable SSL hostname verification (default: False).",
         type=bool,
+    )
+    parser.add_argument(
+        "-G",
+        "--group",
+        help="Type: str | Optional | The Kafka consumer group ID (default: Test Group).",
+        type=str,
+    )
+    parser.add_argument(
+        "-T",
+        "--topic",
+        help="Type: str | Optional | The Kafka topic (default: Test Topic).",
+        type=str,
     )
 
     return parser
+
 
 
 class CLIOptions:
@@ -202,6 +212,8 @@ class CLIOptions:
         """
         self._consumers = 0
         self._producers = 0
+        self._group = "Test Group"
+        self._topic = "Test Topic"
         self._bootstrap_server = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False
@@ -225,7 +237,7 @@ class CLIOptions:
 
     def evaluate_input(self, args: argparse.Namespace) -> None:
         """
-        Validates and assigns the values of producers, consumers, and other settings
+        Validates and assigns the values of producers, consumers, group, topic, and other settings
         from the parsed arguments.
 
         Parameters:
@@ -247,6 +259,74 @@ class CLIOptions:
 
         if args.ssl_check_hostname is not None:
             self.ssl_check_hostname = args.ssl_check_hostname
+
+        if args.group is not None:
+            self.group = args.group
+
+        if args.topic is not None:
+            self.topic = args.topic
+
+    @property
+    def group(self) -> str:
+        """
+        Returns the Kafka consumer group ID.
+
+        Returns:
+        --------
+        str
+            The Kafka consumer group ID.
+        """
+        return self._group
+
+    @property
+    def topic(self) -> str:
+        """
+        Returns the Kafka topic.
+
+        Returns:
+        --------
+        str
+            The Kafka topic name.
+        """
+        return self._topic
+
+    @group.setter
+    def group(self, group: str) -> None:
+        """
+        Sets the Kafka consumer group ID after validating the input.
+
+        Parameters:
+        -----------
+        group : str
+            The Kafka consumer group ID.
+
+        Raises:
+        -------
+        ValueError
+            If the group ID is not a valid string.
+        """
+        if not isinstance(group, str) or not group.strip():
+            raise ValueError("-G (--group) must be a non-empty string.")
+        self._group = group
+
+    @topic.setter
+    def topic(self, topic: str) -> None:
+        """
+        Sets the Kafka topic after validating the input.
+
+        Parameters:
+        -----------
+        topic : str
+            The Kafka topic name.
+
+        Raises:
+        -------
+        ValueError
+            If the topic name is not a valid string.
+        """
+        if not isinstance(topic, str) or not topic.strip():
+            raise ValueError("-T (--topic) must be a non-empty string.")
+        self._topic = topic
 
     @property
     def producers(self) -> int:

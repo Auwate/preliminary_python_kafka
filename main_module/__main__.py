@@ -5,6 +5,7 @@ Main file that runs the overall logic
 import os
 import docker
 import time
+import datetime
 import asyncio
 
 from docker.models.containers import Container
@@ -42,7 +43,8 @@ def spawn_containers(
         container: Container = client.containers.run(
             image=image,
             network=network,
-            environment=environment_variables
+            environment=environment_variables,
+            detach=True
         )
     except Exception as exc:  # pylint: disable=W0718
         return False, None, exc
@@ -50,7 +52,7 @@ def spawn_containers(
     
 
 async def stop_containers(
-    client: docker.DockerClient, container: Container
+    container: Container
 ) -> tuple[bool, Exception]:
     try:
         await container.stop(30)
@@ -68,18 +70,21 @@ async def main():
 
     cli = CLIOptions()
     env_args: dict[str, str | int | bool] = {
-        "AMOUNT": 0,
+        "PRODUCERS": cli.producers,
+        "CONSUMERS": cli.consumers,
+        "GROUP": cli.group,
+        "TOPIC": cli.topic,
         "BOOTSTRAP_SERVERS": cli.bootstrap_server,
         "SECURITY_PROTOCOL": cli.security_protocol,
         "SSL_CHECK_HOSTNAME": cli.ssl_check_hostname
     }
     client = docker.from_env()
 
-    print("\nStart of logs...\n------\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Start of logs...\n------\n")
 
-    print("\nBuilding images...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Building images...\n")
 
-    print("\n1: Producer...")
+    print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
 
     success, producer_image, exc = build_image(
         client,
@@ -91,7 +96,7 @@ async def main():
         "producer-image"
     )
 
-    print("\n2: Consumer...")
+    print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
 
     success, consumer_image, exc = build_image(
         client,
@@ -103,33 +108,31 @@ async def main():
         "consumer-image"
     )
 
-    print("\nStarting containers...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
 
-    print("\n1: Producer...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
 
-    env_args["AMOUNT"] = cli.producers
     success, producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
 
     if not success:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_producer_container")
         if exc:
             raise exc
-        print("An error occurred in spawn_producer_container")
 
-    print("\n2: Consumer...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
 
-    env_args["AMOUNT"] = cli.consumers
     success, consumer_container, exc = spawn_containers(client, consumer_image, "preliminary_python_kafka_kafka_network", env_args)
 
     if not success:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_consumer_container")
         if exc:
             raise exc
-        print("An error occurred in spawn_consumer_container")
 
-    print("\nWaiting 60 seconds for results...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Waiting 60 seconds for results...\n")
 
-    time.sleep(60)
+    time.sleep(1)
 
-    print("\nSending terminate signal...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Sending terminate signal...\n")
 
     tasks: list[asyncio.Task] = [
         asyncio.create_task(stop_containers(producer_container)),
@@ -138,17 +141,17 @@ async def main():
 
     await asyncio.gather(*tasks)
 
-    print("\nTerminated...")
+    print(f"\nINFO: {datetime.datetime.now()}: Terminated...\n")
 
-    print("\nProducer results:\n--------\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Producer results:\n--------\n")
 
-    print(producer_container.logs())
+    print(producer_container.logs().decode())
 
-    print("\nConsumer results:\n--------\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Consumer results:\n--------\n")
 
-    print(consumer_container.logs())
+    print(consumer_container.logs().decode())
 
-    print("\nEnd of logs.")
+    print(f"\nINFO: {datetime.datetime.now()}: End of logs.")
 
 if __name__ == "__main__":
     asyncio.run(main())

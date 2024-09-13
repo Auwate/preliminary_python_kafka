@@ -12,4 +12,4 @@ WORKDIR /home/program/preliminary_python_kafka
 
 RUN python3 -m poetry install --no-root
 
-CMD [ "python3", "-m consumer_module" ]
+CMD [ "python3", "-m", "poetry", "run", "python3", "-m", "consumer_module" ]

@@ -119,6 +119,84 @@ class ConsumerBuilder:
         self._ssl_check_hostname = False
         self._queue = asyncio.Queue()
 
+    def bootstrap_servers(self, bootstrap_servers: str) -> "ConsumerBuilder":
+        """
+        Sets the Kafka bootstrap server(s).
+
+        Parameters:
+        -----------
+        bootstrap_servers : str
+            The Kafka server(s) to connect to.
+
+        Returns:
+        --------
+        ConsumerBuilder:
+            The current instance of the factory for method chaining.
+
+        Raises:
+        -------
+        ValueError:
+            If bootstrap_servers is not of type str.
+        """
+        if not bootstrap_servers:
+            return self
+        if not isinstance(bootstrap_servers, str):
+            raise ValueError("Bootstrap servers is not of type str.")
+        self._bootstrap_servers = bootstrap_servers
+        return self
+
+    def security_protocol(self, security_protocol: str) -> "ConsumerBuilder":
+        """
+        Sets the security protocol for connecting to Kafka.
+
+        Parameters:
+        -----------
+        security_protocol : str
+            The security protocol to use (e.g., "SSL", "PLAINTEXT").
+
+        Returns:
+        --------
+        ConsumerBuilder:
+            The current instance of the factory for method chaining.
+
+        Raises:
+        -------
+        ValueError:
+            If security_protocol is not of type str.
+        """
+        if not security_protocol:
+            return self
+        if not isinstance(security_protocol, str):
+            raise ValueError("Security protocol is not of type str.")
+        self._security_protocol = security_protocol
+        return self
+
+    def ssl_check_hostname(self, ssl_check_hostname: bool) -> "ConsumerBuilder":
+        """
+        Sets whether to check the hostname in SSL certificates.
+
+        Parameters:
+        -----------
+        ssl_check_hostname : bool
+            Whether to check the hostname.
+
+        Returns:
+        --------
+        ConsumerBuilder:
+            The current instance of the factory for method chaining.
+
+        Raises:
+        -------
+        ValueError:
+            If ssl_check_hostname is not of type bool.
+        """
+        if not ssl_check_hostname:
+            return self
+        if not isinstance(ssl_check_hostname, bool):
+            raise ValueError("SSL check hostname is not of type bool.")
+        self._ssl_check_hostname = ssl_check_hostname
+        return self
+
     def topic(self, topic: str) -> "ConsumerBuilder":
         """
         Sets the Kafka topic to consume messages from.
