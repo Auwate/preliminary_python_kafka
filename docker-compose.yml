@@ -9,6 +9,8 @@ services:
       - '29092:29092'
     volumes:
       - ./secrets:/etc/kafka/secrets
+    networks:
+      - kafka_network
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'SSL:SSL,CONTROLLER:PLAINTEXT,SSL-INTERNAL:SSL'

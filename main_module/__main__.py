@@ -9,12 +9,14 @@ from python_kafka.core.cli.parse import CLIOptions
 def build_image(
     client: docker.DockerClient,
     path: str,
-    dockerfile: str
+    dockerfile: str,
+    tag: str
 ) -> tuple[bool, str, Exception]:
     try:
         image, logs = client.images.build(
             path = path,
-            dockerfile = dockerfile
+            dockerfile = dockerfile,
+            tag=tag
         )
 
         for n in logs:
@@ -34,7 +36,7 @@ def spawn_producer_container(
     try:
         client.containers.run(
             image=image,
-            network="kafka_network",
+            network="preliminary_python_kafka_kafka_network",
             environment={"PRODUCERS": str(producers)},
         )
 
@@ -82,7 +84,8 @@ def main():
             os.path.dirname(os.path.dirname(__file__)),
             "build/containers/producers/",
         ),
-        "Dockerfile"
+        "Dockerfile",
+        "producer-container"
     )
 
     #success, exc = spawn_producer_container(client, cli.producers, image)
@@ -100,7 +103,8 @@ def main():
             os.path.dirname(os.path.dirname(__file__)),
             "build/containers/consumers/",
         ),
-        "Dockerfile"
+        "Dockerfile",
+        "consumer-container"
     )
 
     #success, exc = spawn_consumer_container(client, cli.consumers)

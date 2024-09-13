@@ -132,6 +132,7 @@ openssl x509 -in ca.crt -out ca.pem -outform PEM
 cd ..
 
 sudo chgrp 1000 secrets/ -R
+
 chmod g=u secrets -R
 
 sudo docker-compose up -d
