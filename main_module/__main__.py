@@ -11,8 +11,11 @@ import asyncio
 import docker.errors
 import docker.models
 from docker.models.containers import Container
+import docker.models.containers
 from docker.models.images import Image
 import docker.models.images
+import docker.models.volumes
+import docker.types
 from python_kafka.core.cli.parse import CLIOptions
 
 def build_image(
@@ -20,7 +23,7 @@ def build_image(
     path: str,
     dockerfile: str,
     tag: str
-) -> tuple[bool, Image, Exception]:
+) -> tuple[Image, Exception]:
     try:
         image, logs = client.images.build(
             path = path,
@@ -33,37 +36,37 @@ def build_image(
             print(n)
 
     except Exception as exc:  # pylint: disable=W0718
-        return False, None, exc
+        return None, exc
 
-    return True, image, None
+    return image, None
 
 def spawn_containers(
     client: docker.DockerClient,
     image: Image,
     network: str,
     environment_variables: dict[str, str | int | bool]
-) -> tuple[bool, Container, Exception]:
+) -> tuple[Container, Exception]:
     try:
         container: Container = client.containers.run(
             image=image,
             network=network,
             environment=environment_variables,
             detach=True,
-            auto_remove=True
+            mounts=[docker.types.Mount(source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"), target="/home/program/preliminary_python_kafka/secrets/", type="bind")],
         )
     except Exception as exc:  # pylint: disable=W0718
-        return False, None, exc
-    return True, container, None
+        return None, exc
+    return container, None
     
 
 async def stop_containers(
-    container: Container
-) -> tuple[bool, Exception]:
+    container: Container,
+) -> Exception:
     try:
         container.stop(30)
     except Exception as exc:  # pylint: disable=W0718
-        return False, exc
-    return True, None
+        return exc
+    return None
 
 def check_image_exists(
     client: docker.DockerClient,
@@ -76,6 +79,26 @@ def check_image_exists(
     except docker.errors.APIError as exc:
         return None, exc
     return image, None
+
+def gather_logs(
+    container: Container
+) -> tuple[str, Exception]:
+    try:
+        logs = container.logs().decode()
+    except docker.errors.APIError as exc:
+        return None, exc
+    return logs, None
+
+def delete_containers(
+    container: Container
+) -> Exception:
+    try:
+        if container.status == "exited":
+            raise docker.errors.APIError("Container had already exited before deleting.")
+        container.remove(v=True)
+    except docker.errors.APIError as exc:
+        return exc
+    return None
 
 async def main():
     """
@@ -104,12 +127,13 @@ async def main():
 
     if not producer_image:
 
-        if not exc:
+        if exc:
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for producer image")
             raise exc
 
         print(f"\nINFO: {datetime.datetime.now()}: Building producer image...\n")
 
-        success, producer_image, exc = build_image(
+        producer_image, exc = build_image(
             client,
             os.path.join(
                 os.path.dirname(os.path.dirname(__file__)),
@@ -119,16 +143,21 @@ async def main():
             "producer-image"
         )
 
+        if exc:
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for producer image")
+            raise exc
+
     consumer_image, exc = check_image_exists(client, consumer_tag)
 
     if not consumer_image:
 
         if exc:
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for consumer image")
             raise exc
 
         print(f"\nINFO: {datetime.datetime.now()}: Building consumer image...\n")
 
-        success, consumer_image, exc = build_image(
+        consumer_image, exc = build_image(
             client,
             os.path.join(
                 os.path.dirname(os.path.dirname(__file__)),
@@ -138,25 +167,27 @@ async def main():
             "consumer-image"
         )
 
+        if exc:
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for consumer image")
+            raise exc
+
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
 
     print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
 
-    success, producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
+    producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
 
-    if not success:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_producer_container")
-        if exc:
-            raise exc
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container")
+        raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
 
-    success, consumer_container, exc = spawn_containers(client, consumer_image, "preliminary_python_kafka_kafka_network", env_args)
+    consumer_container, exc = spawn_containers(client, consumer_image, "preliminary_python_kafka_kafka_network", env_args)
 
-    if not success:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_consumer_container")
-        if exc:
-            raise exc
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_container for consumer container")
+        raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Waiting 60 seconds for results...\n")
 
@@ -171,15 +202,41 @@ async def main():
 
     await asyncio.gather(*tasks)
 
-    print(f"\nINFO: {datetime.datetime.now()}: Terminated...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Gathering diagnostics...\n")
+
+    #producer_logs, exc = gather_logs(producer_container)
+
+    # if exc:
+    #     print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for producer container")
+    #     raise exc
+
+    consumer_logs, exc = gather_logs(consumer_container)
+
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for consumer container")
+        raise exc
+
+    print(f"\nINFO: {datetime.datetime.now()}: Deleting containers...\n")
+
+    exc = delete_containers(producer_container)
+
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for producer container")
+        raise exc
+
+    exc = delete_containers(consumer_container)
+
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for consumer container")
+        raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Producer results:\n--------\n")
 
-    print(producer_container.logs().decode())
+    # print(producer_logs)
 
     print(f"\nINFO: {datetime.datetime.now()}: Consumer results:\n--------\n")
 
-    print(consumer_container.logs().decode())
+    print(consumer_logs)
 
     print(f"\nINFO: {datetime.datetime.now()}: End of logs.")
 

@@ -2,6 +2,7 @@ import os
 import asyncio
 import signal
 import sys
+import time
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
@@ -22,14 +23,13 @@ def handle_sigterm(sig, frame) -> None:
 consumer_list: list[Consumer] = []
 
 async def main():
-    print("In main")
     loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
     loop.add_signal_handler(signal.SIGTERM, handle_sigterm)
 
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
     security_protocol: str = os.environ["SECURITY_PROTOCOL"]
     ssl_check_hostname: bool = os.environ["SSL_CHECK_HOSTNAME"]
-    consumers: int = os.environ["CONSUMERS"]
+    consumers: int = int(os.environ["CONSUMERS"])
     group: str = os.environ["GROUP"]
     topic: str = os.environ["TOPIC"]
     timeout: int = 100
@@ -57,5 +57,4 @@ async def main():
     await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
-    print("here")
     asyncio.run(main())
