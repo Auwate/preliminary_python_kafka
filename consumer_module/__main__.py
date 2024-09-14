@@ -5,23 +5,26 @@ import sys
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-def handle_sigterm() -> None:
+def handle_sigterm(sig, frame) -> None:
     """
     Handle SIGTERM
     """
+    print("Sigterm")
     throughput: int = 0
 
-    for n in consumers:
+    for n in consumer_list:
         # Access Kafka consumer metrics
         metrics = n.metrics()
         print(metrics)
 
     sys.exit(0)
 
-consumers: list[Consumer] = []
+consumer_list: list[Consumer] = []
 
 async def main():
-    signal.signal(signal.SIGTERM, handle_sigterm)
+    print("In main")
+    loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
+    loop.add_signal_handler(signal.SIGTERM, handle_sigterm)
 
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
     security_protocol: str = os.environ["SECURITY_PROTOCOL"]
@@ -34,7 +37,7 @@ async def main():
 
     tasks: list[asyncio.Task] = []
 
-    for n in range(consumers):
+    for _ in range(consumers):
         consumer: Consumer = (
             ConsumerBuilder()
                 .bootstrap_servers(bootstrap_servers)
@@ -44,10 +47,15 @@ async def main():
                 .topic(topic)
                 .build()
         )
-        tasks.append(asyncio.create_task(consumer.consume_messages(timeout=timeout, max_records=max_records)))
-        consumers.append(consumer)
+        tasks.append(
+            asyncio.create_task(
+                consumer.consume_messages(timeout=timeout, max_records=max_records)
+            )
+        )
+        consumer_list.append(consumer)
 
     await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
+    print("here")
     asyncio.run(main())

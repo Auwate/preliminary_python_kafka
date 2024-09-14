@@ -8,8 +8,11 @@ import time
 import datetime
 import asyncio
 
+import docker.errors
+import docker.models
 from docker.models.containers import Container
 from docker.models.images import Image
+import docker.models.images
 from python_kafka.core.cli.parse import CLIOptions
 
 def build_image(
@@ -22,7 +25,8 @@ def build_image(
         image, logs = client.images.build(
             path = path,
             dockerfile = dockerfile,
-            tag=tag
+            tag=tag,
+            rm=True
         )
 
         for n in logs:
@@ -44,7 +48,8 @@ def spawn_containers(
             image=image,
             network=network,
             environment=environment_variables,
-            detach=True
+            detach=True,
+            auto_remove=True
         )
     except Exception as exc:  # pylint: disable=W0718
         return False, None, exc
@@ -55,11 +60,22 @@ async def stop_containers(
     container: Container
 ) -> tuple[bool, Exception]:
     try:
-        await container.stop(30)
+        container.stop(30)
     except Exception as exc:  # pylint: disable=W0718
         return False, exc
     return True, None
 
+def check_image_exists(
+    client: docker.DockerClient,
+    tag: str
+) -> tuple[Image, Exception]:
+    try:
+        image: Image = client.images.get(tag)
+    except docker.errors.ImageNotFound:
+        return None, None
+    except docker.errors.APIError as exc:
+        return None, exc
+    return image, None
 
 async def main():
     """
@@ -79,34 +95,48 @@ async def main():
         "SSL_CHECK_HOSTNAME": cli.ssl_check_hostname
     }
     client = docker.from_env()
+    consumer_tag = "consumer-image"
+    producer_tag = "producer-image"
 
     print(f"\nINFO: {datetime.datetime.now()}: Start of logs...\n------\n")
 
-    print(f"\nINFO: {datetime.datetime.now()}: Building images...\n")
+    producer_image, exc = check_image_exists(client, producer_tag)
 
-    print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
+    if not producer_image:
 
-    success, producer_image, exc = build_image(
-        client,
-        os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "build/containers/producers/",
-        ),
-        "Dockerfile",
-        "producer-image"
-    )
+        if not exc:
+            raise exc
 
-    print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
+        print(f"\nINFO: {datetime.datetime.now()}: Building producer image...\n")
 
-    success, consumer_image, exc = build_image(
-        client,
-        os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "build/containers/consumers/",
-        ),
-        "Dockerfile",
-        "consumer-image"
-    )
+        success, producer_image, exc = build_image(
+            client,
+            os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                "build/containers/producers/",
+            ),
+            "Dockerfile",
+            "producer-image"
+        )
+
+    consumer_image, exc = check_image_exists(client, consumer_tag)
+
+    if not consumer_image:
+
+        if exc:
+            raise exc
+
+        print(f"\nINFO: {datetime.datetime.now()}: Building consumer image...\n")
+
+        success, consumer_image, exc = build_image(
+            client,
+            os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                "build/containers/consumers/",
+            ),
+            "Dockerfile",
+            "consumer-image"
+        )
 
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
 
@@ -130,7 +160,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: Waiting 60 seconds for results...\n")
 
-    time.sleep(1)
+    time.sleep(5)
 
     print(f"\nINFO: {datetime.datetime.now()}: Sending terminate signal...\n")
 
