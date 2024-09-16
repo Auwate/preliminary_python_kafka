@@ -6,9 +6,7 @@ DIR_NAME="preliminary_python_kafka"
 git clone "$REPO_NAME" -b testing
 cd "$DIR_NAME"
 
-ls
-
-cp ../secrets_volume ./secrets
+cp -r ../secrets_volume/* ./secrets
 
 # Get dependencies
 python3 -m pip install poetry
