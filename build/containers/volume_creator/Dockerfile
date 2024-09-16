@@ -1,3 +1,8 @@
 FROM debian:bookworm-slim
 
-CMD [ "cp", "-r", "./secrets/*", "./secrets_volume" ]
+WORKDIR /home/program
+
+COPY volume.sh .
+RUN chmod +x volume.sh
+
+CMD [ "./volume.sh" ]

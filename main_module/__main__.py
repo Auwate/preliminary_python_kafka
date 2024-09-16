@@ -126,11 +126,11 @@ def setup_volume(
     client: docker.DockerClient
 ) -> tuple[docker.models.volumes.Volume, Exception]:
     try:
-        volume: Volume = client.volumes.get("secrets_volume")
-        return volume, None
+        client.volumes.get("secrets_volume").remove()
+        return client.volumes.create("secrets_volume"), None
     except docker.errors.NotFound:
         try:
-            return client.volumes.create("secrets_volume")
+            return client.volumes.create("secrets_volume"), None
         except docker.errors.APIError as exc:
             return None, exc
     except docker.errors.APIError as exc:
@@ -273,7 +273,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
 
-    #producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
+    # producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
 
     # if exc:
     #     print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n")
@@ -283,7 +283,14 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
 
-    consumer_container, exc = spawn_containers(client, consumer_image, "preliminary_python_kafka_kafka_network", env_args)
+    consumer_container, exc = spawn_containers(
+        client,
+        consumer_image,
+        "preliminary_python_kafka_kafka_network",
+        env_args,
+        volumes=None,
+        mounts=docker.types.Mount("/home/program/", "secrets_volume", type="volume")
+    )
 
     if exc:
         print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_container for consumer container\n")
