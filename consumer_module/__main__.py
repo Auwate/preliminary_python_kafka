@@ -31,6 +31,8 @@ async def main():
     timeout: int = 100
     max_records = 100
 
+    print(consumers)
+
     for _ in range(consumers):
         consumer: Consumer = (
             ConsumerBuilder()
@@ -47,7 +49,7 @@ async def main():
             )
         )
         consumer_list.append(consumer)
-
+    print("Waiting for gather...")
     await asyncio.gather(*tasks)
 
     amount_consumed = 0

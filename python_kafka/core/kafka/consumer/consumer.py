@@ -200,6 +200,7 @@ class Consumer:
         the shutdown flag is set to True.
         """
         consumed = 0
+        print("Starting...")
         while not self.shutdown:
             try:
                 data = self.consumer.poll(timeout_ms=timeout, max_records=max_records)

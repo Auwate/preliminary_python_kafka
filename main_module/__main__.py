@@ -344,7 +344,6 @@ async def main():
     if exc:
         print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for consumer container\n")
         raise exc
-    print(consumer_logs)
 
     print(f"\nINFO: {datetime.datetime.now()}: Deleting containers...\n")
 
