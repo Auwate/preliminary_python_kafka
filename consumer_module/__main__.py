@@ -5,7 +5,7 @@ import datetime
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-async def handle_sigterm(signal, frame) -> None:
+def handle_sigterm(signal, frame) -> None:
     """
     Handle SIGTERM
     """
@@ -13,15 +13,6 @@ async def handle_sigterm(signal, frame) -> None:
 
     for n in consumer_list:
         n.shutdown = True
-
-    try:
-        results: asyncio.Future = await asyncio.gather(*tasks)
-        for task_num, result in results:
-            print(f"Task number: {task_num}, result: {result}")
-    except Exception as exc:
-        raise exc
-
-    asyncio.get_event_loop().stop()
 
 
 consumer_list: list[Consumer] = []
@@ -61,8 +52,12 @@ async def main():
 
     amount_consumed = 0
 
-    for n in tasks:
-        amount_consumed += n.result()
+    try:
+        for task in tasks:
+            amount_consumed += task.result()
+
+    except Exception as exc:
+        raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n")
 

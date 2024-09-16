@@ -6,6 +6,7 @@ DIR_NAME="preliminary_python_kafka"
 git clone "$REPO_NAME" -b testing
 cd "$DIR_NAME"
 
+# Copy the volume into the application
 mkdir ./secrets
 cp -r ../secrets_volume/* ./secrets
 
