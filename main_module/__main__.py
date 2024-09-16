@@ -50,12 +50,14 @@ def spawn_containers(
     volumes: Volume = None,
     mounts: docker.types.Mount = None,
 ) -> tuple[Container, Exception]:
-    if not mounts:
-        mounts = [docker.types.Mount(source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"), target="/home/program/secrets/", type="bind")]
-    if not volumes:
-        volumes = {}
+    if mounts:
+        mounts = [mounts]
     else:
+        mounts = []
+    if volumes:
         volumes = {volumes.name: {"bind": "/home/program/secrets_volume", "mode": "rw"}}
+    else:
+        volumes = {}
 
     try:
         container: Container = client.containers.run(
@@ -266,7 +268,11 @@ async def main():
         "preliminary_python_kafka_kafka_network",
         env_args,
         volumes=volume,
-        mounts=None
+        mounts=docker.types.Mount(
+            source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"),
+            target="/home/program/secrets/",
+            type="bind"
+        )
     )
 
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
@@ -289,7 +295,7 @@ async def main():
         "preliminary_python_kafka_kafka_network",
         env_args,
         volumes=None,
-        mounts=docker.types.Mount("/home/program/", "secrets_volume", type="volume")
+        mounts=docker.types.Mount("secrets_volume", "/home/program/secrets_volume", type="volume")
     )
 
     if exc:
