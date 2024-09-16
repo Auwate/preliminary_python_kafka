@@ -89,7 +89,7 @@ async def stop_containers(
     container: Container,
 ) -> Exception:
     try:
-        await container.stop(30)
+        container.stop(timeout=30)
     except Exception as exc:  # pylint: disable=W0718
         return exc
     return None
@@ -264,7 +264,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: Moving secrets into secrets_volume...\n")
 
-    spawn_containers(
+    moving_container, exc = spawn_containers(
         client,
         moving_image,
         "preliminary_python_kafka_kafka_network",
@@ -277,6 +277,16 @@ async def main():
         ),
         delete=True
     )
+
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for moving-image.\n")
+        raise exc
+
+    exc = await stop_containers(moving_container)
+
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in stop_containers for moving-container.\n")
+        raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
 
@@ -315,7 +325,7 @@ async def main():
 
     tasks: list[asyncio.Task] = [
         #asyncio.create_task(stop_containers(producer_container)),
-        asyncio.create_task(stop_containers(consumer_container))
+        asyncio.create_task(coro=stop_containers(consumer_container))
     ]
 
     await asyncio.gather(*tasks)
