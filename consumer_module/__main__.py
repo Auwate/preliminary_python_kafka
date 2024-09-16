@@ -1,8 +1,7 @@
 import os
 import asyncio
 import signal
-import sys
-import time
+import datetime
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
@@ -11,14 +10,11 @@ def handle_sigterm(sig, frame) -> None:
     Handle SIGTERM
     """
     print("Sigterm")
-    throughput: int = 0
 
     for n in consumer_list:
-        # Access Kafka consumer metrics
-        metrics = n.metrics()
-        print(metrics)
+        n.shutdown = True
 
-    sys.exit(0)
+    asyncio.get_event_loop().stop()
 
 consumer_list: list[Consumer] = []
 
@@ -55,6 +51,13 @@ async def main():
         consumer_list.append(consumer)
 
     await asyncio.gather(*tasks)
+
+    amount_consumed = 0
+
+    for n in tasks:
+        amount_consumed += n.result()
+
+    print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n")
 
 if __name__ == "__main__":
     asyncio.run(main())

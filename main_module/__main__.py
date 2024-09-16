@@ -16,6 +16,8 @@ from docker.models.images import Image
 import docker.models.images
 import docker.models.volumes
 import docker.types
+from python_kafka.core.kafka.admin.admin_builder import AdminBuilder
+from python_kafka.core.kafka.admin.admin import Admin
 from python_kafka.core.cli.parse import CLIOptions
 
 def build_image(
@@ -57,13 +59,22 @@ def spawn_containers(
     except Exception as exc:  # pylint: disable=W0718
         return None, exc
     return container, None
-    
+
+def setup_topics(
+    topic_name: str,
+    num_partitions: int,
+    admin: Admin
+) -> Exception:
+    success, exc = admin.create_topic(topic_name=topic_name, num_partitions=num_partitions, repli_factor=1, timeout_ms=1000)
+    if not success:
+        return exc
+    return None
 
 async def stop_containers(
     container: Container,
 ) -> Exception:
     try:
-        container.stop(30)
+        await container.stop(30)
     except Exception as exc:  # pylint: disable=W0718
         return exc
     return None
@@ -118,6 +129,13 @@ async def main():
         "SSL_CHECK_HOSTNAME": cli.ssl_check_hostname
     }
     client = docker.from_env()
+    admin_client: Admin = (
+        AdminBuilder()
+            .bootstrap_servers(cli.bootstrap_server)
+            .security_protocol(cli.security_protocol)
+            .ssl_check_hostname(cli.ssl_check_hostname)
+            .build()
+    )
     consumer_tag = "consumer-image"
     producer_tag = "producer-image"
 
@@ -128,7 +146,7 @@ async def main():
     if not producer_image:
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for producer image")
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for producer image\n")
             raise exc
 
         print(f"\nINFO: {datetime.datetime.now()}: Building producer image...\n")
@@ -144,7 +162,7 @@ async def main():
         )
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for producer image")
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for producer image\n")
             raise exc
 
     consumer_image, exc = check_image_exists(client, consumer_tag)
@@ -152,7 +170,7 @@ async def main():
     if not consumer_image:
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for consumer image")
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for consumer image\n")
             raise exc
 
         print(f"\nINFO: {datetime.datetime.now()}: Building consumer image...\n")
@@ -168,8 +186,16 @@ async def main():
         )
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for consumer image")
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for consumer image\n")
             raise exc
+
+    print(f"\nINFO: {datetime.datetime.now()}: Setting up topic in Kafka cluster...\n")
+
+    exc: Exception = setup_topics("TEST", cli.consumers, admin_client)
+
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_topics.\n")
+        raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
 
@@ -178,7 +204,7 @@ async def main():
     producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container")
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n")
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
@@ -186,7 +212,7 @@ async def main():
     consumer_container, exc = spawn_containers(client, consumer_image, "preliminary_python_kafka_kafka_network", env_args)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_container for consumer container")
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_container for consumer container\n")
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Waiting 60 seconds for results...\n")
@@ -213,7 +239,7 @@ async def main():
     consumer_logs, exc = gather_logs(consumer_container)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for consumer container")
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for consumer container\n")
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Deleting containers...\n")
@@ -221,13 +247,13 @@ async def main():
     exc = delete_containers(producer_container)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for producer container")
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for producer container\n")
         raise exc
 
     exc = delete_containers(consumer_container)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for consumer container")
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for consumer container\n")
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Producer results:\n--------\n")
@@ -238,7 +264,7 @@ async def main():
 
     print(consumer_logs)
 
-    print(f"\nINFO: {datetime.datetime.now()}: End of logs.")
+    print(f"\nINFO: {datetime.datetime.now()}: End of logs.\n")
 
 if __name__ == "__main__":
     asyncio.run(main())

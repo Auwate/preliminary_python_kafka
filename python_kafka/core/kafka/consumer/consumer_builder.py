@@ -117,7 +117,6 @@ class ConsumerBuilder:
         self._bootstrap_servers = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False
-        self._queue = asyncio.Queue()
 
     def bootstrap_servers(self, bootstrap_servers: str) -> "ConsumerBuilder":
         """
@@ -247,32 +246,6 @@ class ConsumerBuilder:
         if not isinstance(group, str):
             raise ValueError("Group is not of type str.")
         self._group = group
-        return self
-
-    def queue(self, queue: asyncio.Queue) -> "ConsumerBuilder":
-        """
-        Sets the asyncio queue where consumed messages will be placed.
-
-        Parameters:
-        -----------
-        queue : asyncio.Queue
-            The queue to use for placing consumed messages.
-
-        Returns:
-        --------
-        ConsumerBuilder:
-            The current instance of the factory for method chaining.
-
-        Raises:
-        -------
-        ValueError:
-            If queue is not an instance of asyncio.Queue.
-        """
-        if not queue:
-            return self
-        if not isinstance(queue, asyncio.Queue):
-            raise ValueError("Queue is not of type asyncio.Queue")
-        self._queue = queue
         return self
 
     def build(self) -> "Consumer":
