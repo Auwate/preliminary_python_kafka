@@ -31,7 +31,8 @@ def build_image(
             path = path,
             dockerfile = dockerfile,
             tag=tag,
-            rm=True
+            rm=True,
+            nocache=True
         )
 
         for n in logs:
