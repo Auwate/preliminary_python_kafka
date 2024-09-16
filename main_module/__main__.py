@@ -65,9 +65,10 @@ def setup_topics(
     num_partitions: int,
     admin: Admin
 ) -> Exception:
-    success, exc = admin.create_topic(topic_name=topic_name, num_partitions=num_partitions, repli_factor=1, timeout_ms=1000)
-    if not success:
-        return exc
+    if admin.get_topic_details(topic_name) is None:
+        success, exc = admin.create_topic(topic_name=topic_name, num_partitions=num_partitions, repli_factor=1, timeout_ms=1000)
+        if not success:
+            return exc
     return None
 
 async def stop_containers(
@@ -207,6 +208,8 @@ async def main():
         print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n")
         raise exc
 
+    time.sleep(30)
+
     print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
 
     consumer_container, exc = spawn_containers(client, consumer_image, "preliminary_python_kafka_kafka_network", env_args)
@@ -215,9 +218,11 @@ async def main():
         print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_container for consumer container\n")
         raise exc
 
+    time.sleep(30)
+
     print(f"\nINFO: {datetime.datetime.now()}: Waiting 60 seconds for results...\n")
 
-    time.sleep(5)
+    time.sleep(20)
 
     print(f"\nINFO: {datetime.datetime.now()}: Sending terminate signal...\n")
 
@@ -241,6 +246,7 @@ async def main():
     if exc:
         print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for consumer container\n")
         raise exc
+    print(consumer_logs)
 
     print(f"\nINFO: {datetime.datetime.now()}: Deleting containers...\n")
 

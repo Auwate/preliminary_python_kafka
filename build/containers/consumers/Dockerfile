@@ -9,7 +9,7 @@ RUN apt install git -y
 WORKDIR /home/program
 
 # Copy the install script
-COPY ./build/containers/consumers/consumer.sh .
+COPY .consumer.sh .
 RUN chmod +x consumer.sh
 
 # Run the install script

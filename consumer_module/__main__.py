@@ -5,7 +5,7 @@ import datetime
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-def handle_sigterm(sig, frame) -> None:
+async def handle_sigterm(signal, frame) -> None:
     """
     Handle SIGTERM
     """
@@ -14,9 +14,18 @@ def handle_sigterm(sig, frame) -> None:
     for n in consumer_list:
         n.shutdown = True
 
+    try:
+        results: asyncio.Future = await asyncio.gather(*tasks)
+        for task_num, result in results:
+            print(f"Task number: {task_num}, result: {result}")
+    except Exception as exc:
+        raise exc
+
     asyncio.get_event_loop().stop()
 
+
 consumer_list: list[Consumer] = []
+tasks: list[asyncio.Task] = []
 
 async def main():
     loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
@@ -30,8 +39,6 @@ async def main():
     topic: str = os.environ["TOPIC"]
     timeout: int = 100
     max_records = 100
-
-    tasks: list[asyncio.Task] = []
 
     for _ in range(consumers):
         consumer: Consumer = (
