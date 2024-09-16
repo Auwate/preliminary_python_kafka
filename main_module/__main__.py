@@ -9,7 +9,7 @@ import datetime
 import asyncio
 
 import docker.errors
-import docker.models
+from docker.models.volumes import Volume
 from docker.models.containers import Container
 import docker.models.containers
 from docker.models.images import Image
@@ -46,15 +46,25 @@ def spawn_containers(
     client: docker.DockerClient,
     image: Image,
     network: str,
-    environment_variables: dict[str, str | int | bool]
+    environment_variables: dict[str, str | int | bool],
+    volumes: Volume = None,
+    mounts: docker.types.Mount = None,
 ) -> tuple[Container, Exception]:
+    if not mounts:
+        mounts = [docker.types.Mount(source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"), target="/home/program/secrets/", type="bind")]
+    if not volumes:
+        volumes = {}
+    else:
+        volumes = {volumes.name: {"bind": "/home/program/secrets_volume", "mode": "rw"}}
+
     try:
         container: Container = client.containers.run(
             image=image,
             network=network,
             environment=environment_variables,
             detach=True,
-            mounts=[docker.types.Mount(source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"), target="/home/program/secrets/", type="volume")],
+            volumes=volumes,
+            mounts=mounts,
         )
     except Exception as exc:  # pylint: disable=W0718
         return None, exc
@@ -111,6 +121,22 @@ def delete_containers(
     except docker.errors.APIError as exc:
         return exc
     return None
+
+def setup_volume(
+    client: docker.DockerClient
+) -> tuple[docker.models.volumes.Volume, Exception]:
+    try:
+        volume: Volume = client.volumes.get("secrets_volume")
+        return volume, None
+    except docker.errors.NotFound:
+        try:
+            return client.volumes.create("secrets_volume")
+        except docker.errors.APIError as exc:
+            return None, exc
+    except docker.errors.APIError as exc:
+        return None, exc
+    except Exception as exc:
+        return None, exc
 
 async def main():
     """
@@ -197,6 +223,51 @@ async def main():
     if exc:
         print(f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_topics.\n")
         raise exc
+
+    print(f"\nINFO: {datetime.datetime.now()}: Creating secrets volume...\n")
+
+    volume, exc = setup_volume(client)
+
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_volume.\n")
+        raise exc
+
+    print(f"\nINFO: {datetime.datetime.now()}: Building container to move volumes...\n")
+
+    moving_image, exc = check_image_exists(client, "moving-image")
+
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_volume.\n")
+        raise exc
+
+    if not moving_image:
+
+        print(f"\nINFO: {datetime.datetime.now()}: Building moving container image...\n")
+
+        moving_image, exc = build_image(
+            client,
+            os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                "build/containers/consumers/",
+            ),
+            "Dockerfile",
+            "moving-image"
+        )
+
+        if exc:
+            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image.\n")
+            raise exc
+
+    print(f"\nINFO: {datetime.datetime.now()}: Moving secrets into secrets_volume...\n")
+
+    spawn_containers(
+        client,
+        moving_image,
+        "preliminary_python_kafka_kafka_network",
+        env_args,
+        volumes=volume,
+        mounts=None
+    )
 
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
 
