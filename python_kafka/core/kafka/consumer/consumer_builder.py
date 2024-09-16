@@ -17,8 +17,6 @@ _security_protocol : str
     The security protocol for connecting to Kafka (default: "SSL").
 _ssl_check_hostname : bool
     Whether to check the hostname in SSL certificates (default: False).
-_queue : asyncio.Queue
-    An asyncio queue where consumed messages will be placed (default: asyncio.Queue()).
 
 Methods:
 --------
@@ -38,10 +36,6 @@ security_protocol(security_protocol: str) -> "ConsumerBuilder"
 ssl_check_hostname(ssl_check_hostname: bool) -> "ConsumerBuilder"
     Sets whether to check the hostname in SSL certificates. Raises ValueError if
     ssl_check_hostname is not a boolean.
-
-queue(queue: asyncio.Queue) -> "ConsumerBuilder"
-    Sets the asyncio queue where consumed messages will be placed. Raises ValueError if
-    queue is not an instance of asyncio.Queue.
 
 build() -> Consumer
     Creates a new `Consumer` instance with the configured parameters.
@@ -71,8 +65,6 @@ class ConsumerBuilder:
         The security protocol for connecting to Kafka (default: "SSL").
     _ssl_check_hostname : bool
         Whether to check the hostname in SSL certificates (default: False).
-    _queue : asyncio.Queue
-        An asyncio queue where consumed messages will be placed (default: asyncio.Queue()).
 
     Methods:
     --------
@@ -94,10 +86,6 @@ class ConsumerBuilder:
         Sets whether to check the hostname in SSL certificates. Raises ValueError if
         ssl_check_hostname is not a boolean.
 
-    queue(queue: asyncio.Queue) -> "ConsumerBuilder"
-        Sets the asyncio queue where consumed messages will be placed. Raises ValueError if
-        queue is not an instance of asyncio.Queue.
-
     build() -> Consumer
         Creates a new `Consumer` instance with the configured parameters.
     """
@@ -110,7 +98,6 @@ class ConsumerBuilder:
         - bootstrap_servers: "localhost:9092"
         - security_protocol: "SSL"
         - ssl_check_hostname: False
-        - queue: an empty asyncio.Queue
         """
         self._topic = ""
         self._group = ""
@@ -262,6 +249,5 @@ class ConsumerBuilder:
             sec_protocol=self._security_protocol,
             ssl_check_hostname=self._ssl_check_hostname,
             topic=self._topic,
-            group=self._group,
-            queue=self._queue,
+            group=self._group
         )
