@@ -5,7 +5,7 @@ import datetime
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-def handle_sigterm(signal, frame) -> None:
+def handle_sigterm() -> None:
     """
     Handle SIGTERM
     """
@@ -43,7 +43,7 @@ async def main():
         )
         tasks.append(
             asyncio.create_task(
-                consumer.consume_messages(timeout=timeout, max_records=max_records)
+                coro = consumer.consume_messages(timeout=timeout, max_records=max_records)
             )
         )
         consumer_list.append(consumer)

@@ -200,9 +200,7 @@ class Consumer:
         the shutdown flag is set to True.
         """
         consumed = 0
-        while True:
-            if self.shutdown:
-                return consumed
+        while not self.shutdown:
             try:
                 data = self.consumer.poll(timeout_ms=timeout, max_records=max_records)
                 if data:
@@ -212,3 +210,5 @@ class Consumer:
                     consumed += len(data)
             except Exception as exc:  # pylint: disable=W0718
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
+
+        return consumed
