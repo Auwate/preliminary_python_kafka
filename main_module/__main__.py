@@ -49,6 +49,7 @@ def spawn_containers(
     environment_variables: dict[str, str | int | bool],
     volumes: Volume = None,
     mounts: docker.types.Mount = None,
+    delete: bool = False
 ) -> tuple[Container, Exception]:
     if mounts:
         mounts = [mounts]
@@ -67,6 +68,7 @@ def spawn_containers(
             detach=True,
             volumes=volumes,
             mounts=mounts,
+            auto_remove=delete
         )
     except Exception as exc:  # pylint: disable=W0718
         return None, exc
@@ -272,7 +274,8 @@ async def main():
             source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"),
             target="/home/program/secrets/",
             type="bind"
-        )
+        ),
+        delete=True
     )
 
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
@@ -295,7 +298,7 @@ async def main():
         "preliminary_python_kafka_kafka_network",
         env_args,
         volumes=None,
-        mounts=docker.types.Mount("secrets_volume", "/home/program/secrets_volume", type="volume")
+        mounts=docker.types.Mount(source="secrets_volume", target="/home/program/secrets_volume", type="volume")
     )
 
     if exc:
