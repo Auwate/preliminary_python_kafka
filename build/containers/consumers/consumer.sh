@@ -2,7 +2,7 @@
 
 # Clone the repo
 git clone https://github.com/Auwate/preliminary_python_kafka.git -b testing
-cd preliminary_python_kafka/
+cd ./preliminary_python_kafka/
 
 # Get dependencies
 python3 -m pip install poetry
