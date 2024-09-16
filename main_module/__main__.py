@@ -54,7 +54,7 @@ def spawn_containers(
             network=network,
             environment=environment_variables,
             detach=True,
-            mounts=[docker.types.Mount(source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"), target="/home/program/preliminary_python_kafka/secrets/", type="bind")],
+            mounts=[docker.types.Mount(source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"), target="/home/program/secrets/", type="volume")],
         )
     except Exception as exc:  # pylint: disable=W0718
         return None, exc
@@ -202,13 +202,13 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
 
-    producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
+    #producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
 
-    if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n")
-        raise exc
+    # if exc:
+    #     print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n")
+    #     raise exc
 
-    time.sleep(30)
+    # time.sleep(30)
 
     print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
 
@@ -227,7 +227,7 @@ async def main():
     print(f"\nINFO: {datetime.datetime.now()}: Sending terminate signal...\n")
 
     tasks: list[asyncio.Task] = [
-        asyncio.create_task(stop_containers(producer_container)),
+        #asyncio.create_task(stop_containers(producer_container)),
         asyncio.create_task(stop_containers(consumer_container))
     ]
 
@@ -250,7 +250,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: Deleting containers...\n")
 
-    exc = delete_containers(producer_container)
+    #exc = delete_containers(producer_container)
 
     if exc:
         print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for producer container\n")

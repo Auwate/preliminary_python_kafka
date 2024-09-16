@@ -1,16 +1,14 @@
 #!/bin/bash
 
-REPO_NAME="https://github.com/Auwate/preliminary_python_kafka.git -b testing"
+ls
+
+REPO_NAME="https://github.com/Auwate/preliminary_python_kafka.git"
 DIR_NAME="preliminary_python_kafka"
 
 # Clone the repo
-
-if [ -d "$DIR_NAME" ]; then
-    rm -rf "$DIR_NAME"
-fi
-
-git clone "$REPO_NAME"
+git clone "$REPO_NAME" -b testing
 cd "$DIR_NAME"
+mv ../secrets ./
 
 # Get dependencies
 python3 -m pip install poetry
