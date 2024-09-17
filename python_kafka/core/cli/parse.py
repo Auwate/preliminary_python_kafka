@@ -212,8 +212,8 @@ class CLIOptions:
         """
         self._consumers = 0
         self._producers = 0
-        self._group = "Test Group"
-        self._topic = "Test Topic"
+        self._group = "Test_Group"
+        self._topic = "Test_Topic"
         self._bootstrap_server = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False

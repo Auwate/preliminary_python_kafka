@@ -306,7 +306,7 @@ async def main():
     consumer_container, exc = spawn_containers(
         client,
         consumer_image,
-        "host"
+        "host",
         #"preliminary_python_kafka_kafka_network",
         env_args,
         volumes=None,
