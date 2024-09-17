@@ -3,7 +3,10 @@ A wrapper class for the KafkaProducer class. Works in tandem with the producerBu
 """
 
 import datetime
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from kafka import KafkaProducer, errors
+from kafka.producer.future import FutureRecordMetadata
 from ....configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
 
 
@@ -50,14 +53,18 @@ class Producer:
             raise ValueError("Shutdown is not of type bool.")
         self._shutdown = shutdown
 
-    async def send_messages(self) -> int:
+    async def send_messages(self, executor: ThreadPoolExecutor) -> int:
         message_count = 0
+        loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
         while not self.shutdown:
             try:
-                await self.producer.send(
+                future: FutureRecordMetadata = self.producer.send(
                     topic=self.topic, value=f"Message {message_count+1}\n".encode()
                 )
-                message_count += 1
+                result: dict[str, object] = await loop.run_in_executor(executor=executor, func=future.get(timeout=10)).result()
+
+                if result["topic"] == self.topic:
+                    message_count += 1
             except errors.KafkaTimeoutError as exc:
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
 

@@ -3,6 +3,7 @@ import asyncio
 import signal
 import datetime
 import time
+from concurrent.futures import ThreadPoolExecutor
 from python_kafka.core.kafka.producer.producer import Producer
 from python_kafka.core.kafka.producer.producer_builder import ProducerBuilder
 
@@ -58,15 +59,17 @@ async def main():
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
     security_protocol: str = os.environ["SECURITY_PROTOCOL"]
     ssl_check_hostname: bool = os.environ["SSL_CHECK_HOSTNAME"]
+    producers: int = int(os.environ["PRODUCERS"])
+    acks: int | str = str(os.environ["ACKS"]) if os.environ["ACKS"] == "all" else int(os.environ["ACKS"])
+    topic: str = os.environ["TOPIC"]
+    workers: int = int(os.environ["WORKERS"])
 
     if ssl_check_hostname == "False":
         ssl_check_hostname = False
     else:
         ssl_check_hostname = True
 
-    producers: int = int(os.environ["PRODUCERS"])
-    acks: int | str = str(os.environ["ACKS"]) if os.environ["ACKS"] == "all" else int(os.environ["ACKS"])
-    topic: str = os.environ["TOPIC"]
+    executor = ThreadPoolExecutor(max_workers=workers)
 
     for _ in range(producers):
         try:
@@ -81,7 +84,7 @@ async def main():
             )
             tasks.append(
                 asyncio.create_task(
-                    coro=producer.send_messages()
+                    coro=producer.send_messages(executor)
                 )
             )
             producer_list.append(producer)
@@ -92,13 +95,13 @@ async def main():
 
 
 if __name__ == "__main__":
-    loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
+    main_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
     try:
-        loop.create_task(coro=main())
-        loop.run_forever()
+        main_loop.create_task(coro=main())
+        main_loop.run_forever()
     except KeyboardInterrupt:
         print("Interrupted.", flush=True)
     except Exception as exc:
         raise exc
     finally:
-        loop.close()
+        main_loop.close()

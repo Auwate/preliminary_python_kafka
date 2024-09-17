@@ -157,6 +157,7 @@ async def main():
         "GROUP": cli.group,
         "TOPIC": cli.topic,
         "ACKS": cli.acks,
+        "WORKERS": cli.workers,
         "BOOTSTRAP_SERVERS": cli.bootstrap_server,
         "SECURITY_PROTOCOL": cli.security_protocol,
         "SSL_CHECK_HOSTNAME": cli.ssl_check_hostname,

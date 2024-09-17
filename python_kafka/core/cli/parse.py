@@ -55,8 +55,14 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-A",
         "--acks",
-        help="Type: int | str (Optional) The Kafka topic (default: Test Topic)."
+        help="Type: int | str (Optional) The acknowledgement pattern between Kafka and producer."
              "Values can be 0, 1 or 'all'",
+        type=str,
+    )
+    parser.add_argument(
+        "-W",
+        "--workers",
+        help="Type: int (Optional) The amount of worker threads that will handle blocking code.",
         type=str,
     )
 
@@ -74,6 +80,7 @@ class CLIOptions:
         self._group = "Test_Group"
         self._topic = "Test_Topic"
         self._acks: int | str = 0 # Values can be 0, 1, or "all"
+        self._workers: int = 10 # The amount of worker threads in the Producer container
         self._bootstrap_server = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False
@@ -112,6 +119,19 @@ class CLIOptions:
         if args.acks is not None:
             self.acks = args.acks
 
+        if args.workers is not None:
+            self.workers = args.workers
+
+    @property
+    def workers(self) -> int:
+        return self._workers
+
+    @workers.setter
+    def workers(self, workers: int) -> None:
+        if not isinstance(workers, int):
+            raise ValueError("-W (--workers) must be a number")
+        self._workers = workers
+
     @property
     def acks(self) -> int | str:
         return self._acks
@@ -119,7 +139,7 @@ class CLIOptions:
     @acks.setter
     def acks(self, acks) -> None:
         if not isinstance(acks, int) and not isinstance(acks, str):
-            raise ValueError("Acks not of type str or int.")
+            raise ValueError("-A (--acks) must be 0, 1, or all.")
         self._acks = acks
 
     @property
