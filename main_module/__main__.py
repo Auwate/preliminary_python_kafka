@@ -223,7 +223,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: Setting up topic in Kafka cluster...\n")
 
-    exc: Exception = setup_topics("TEST", cli.consumers, admin_client)
+    exc: Exception = setup_topics(cli.topic, cli.consumers, admin_client)
 
     if exc:
         print(f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_topics.\n")
@@ -306,7 +306,8 @@ async def main():
     consumer_container, exc = spawn_containers(
         client,
         consumer_image,
-        "preliminary_python_kafka_kafka_network",
+        "host"
+        #"preliminary_python_kafka_kafka_network",
         env_args,
         volumes=None,
         mounts=docker.types.Mount(source="secrets_volume", target="/home/program/secrets_volume", type="volume")
