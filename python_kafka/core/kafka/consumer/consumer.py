@@ -117,17 +117,30 @@ class Consumer:
         Initializes the KafkaConsumer instance with the specified configuration.
         """
         self._shutdown = False
-        self._consumer = KafkaConsumer(
-            topic,
-            bootstrap_servers=bs_servers,
-            group_id=group,
-            security_protocol=sec_protocol,
-            ssl_check_hostname=ssl_check_hostname,
-            ssl_cafile=ssl_cafile,
-            ssl_certfile=ssl_certfile,
-            ssl_keyfile=ssl_keyfile,
-            ssl_password=ssl_password,
-        )
+
+        if not topic:
+            self._consumer = KafkaConsumer(
+                bootstrap_servers=bs_servers,
+                group_id=group,
+                security_protocol=sec_protocol,
+                ssl_check_hostname=ssl_check_hostname,
+                ssl_cafile=ssl_cafile,
+                ssl_certfile=ssl_certfile,
+                ssl_keyfile=ssl_keyfile,
+                ssl_password=ssl_password,
+            )
+        else:
+            self._consumer = KafkaConsumer(
+                topic,
+                bootstrap_servers=bs_servers,
+                group_id=group,
+                security_protocol=sec_protocol,
+                ssl_check_hostname=ssl_check_hostname,
+                ssl_cafile=ssl_cafile,
+                ssl_certfile=ssl_certfile,
+                ssl_keyfile=ssl_keyfile,
+                ssl_password=ssl_password,
+            )
 
     @property
     def shutdown(self) -> bool:
