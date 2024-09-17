@@ -39,7 +39,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: TEST MESSAGE\n")
 
-    print("BS:", bootstrap_servers, "SP:", security_protocol, "SCH", ssl_check_hostname, "Group", group, "Topic", topic)
+    print("BS:", bootstrap_servers, "SP:", security_protocol, "SCH", ssl_check_hostname, "Group", group, "Topic", topic, "Consumers:", consumers)
 
     for _ in range(consumers):
         consumer: Consumer = (
