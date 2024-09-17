@@ -30,7 +30,7 @@ async def main():
     )
 
     loop.add_signal_handler(
-        signal.SIGTERM,
+        signal.SIGINT,
         lambda s=signal.SIGINT: asyncio.create_task(handle_sigterm(s))
     )
 
