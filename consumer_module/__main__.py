@@ -9,7 +9,7 @@ def handle_sigterm() -> None:
     """
     Handle SIGTERM
     """
-    print(f"\nINFO: {datetime.datetime.now()}: SIG TERM RECEIVED...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: SIG TERM RECEIVED...\n", flush=True)
 
     for n in consumer_list:
         n.shutdown = True
@@ -38,12 +38,12 @@ async def main():
     timeout: int = 100
     max_records = 100
 
-    print(f"\nINFO: {datetime.datetime.now()}: TEST MESSAGE\n")
+    print(f"\nINFO: {datetime.datetime.now()}: TEST MESSAGE\n", flush=True)
 
-    print("BS:", bootstrap_servers, "SP:", security_protocol, "SCH", ssl_check_hostname, "Group", group, "Topic", topic, "Consumers:", consumers)
+    print("BS:", bootstrap_servers, "SP:", security_protocol, "SCH", ssl_check_hostname, "Group", group, "Topic", topic, "Consumers:", consumers, flush=True)
 
     for i in range(consumers):
-        print("INSIDE LOOP NUMBER", i)
+        print("INSIDE LOOP NUMBER", i, flush=True)
         try:
             consumer: Consumer = (
                 ConsumerBuilder()
@@ -54,18 +54,18 @@ async def main():
                     .topic(topic)
                     .build()
             )
-            print("Consumer:", consumer)
+            print("Consumer:", consumer, flush=True)
             tasks.append(
                 asyncio.create_task(
                     coro = consumer.consume_messages(timeout=timeout, max_records=max_records)
                 )
             )
             consumer_list.append(consumer)
-            print("CL:", consumer_list, "Tasks:", tasks)
+            print("CL:", consumer_list, "Tasks:", tasks, flush=True)
         except Exception as exc:
             raise exc
 
-    print("Waiting for gather...")
+    print("Waiting for gather...", flush=True)
     await asyncio.gather(*tasks)
 
     amount_consumed = 0
@@ -77,7 +77,7 @@ async def main():
     except Exception as exc:
         raise exc
 
-    print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n", flush=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
