@@ -217,8 +217,7 @@ class CLIOptions:  # pylint: disable=R0902
         """
         if not isinstance(acks, str):
             raise ValueError("-A (--acks) must be 0, 1, or all.")
-        else:
-            self._acks = acks
+        self._acks = acks
 
     @property
     def group(self) -> str:

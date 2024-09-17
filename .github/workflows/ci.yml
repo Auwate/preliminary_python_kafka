@@ -29,7 +29,7 @@ jobs:
               run: |
                 cd build/ssl_dependencies/
                 chmod 777 build.sh
-                sudo ./build.sh
+                ./build.sh
                 cd ../..
             - name: Install Python dependencies
               run: |
