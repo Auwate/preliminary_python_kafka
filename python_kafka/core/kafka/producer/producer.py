@@ -6,7 +6,7 @@ import datetime
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from kafka import KafkaProducer, errors
-from kafka.producer.future import FutureRecordMetadata
+from kafka.producer.future import FutureRecordMetadata, RecordMetadata
 from ....configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
 
 
@@ -61,9 +61,12 @@ class Producer:
                 future: FutureRecordMetadata = self.producer.send(
                     topic=self.topic, value=f"Message {message_count+1}\n".encode()
                 )
-                result: dict[str, object] = await loop.run_in_executor(executor=executor, func=future.get(timeout=10)).result()
+                result: RecordMetadata = await loop.run_in_executor(
+                    executor=executor,
+                    func=lambda: future.get(timeout=10)
+                )
 
-                if result["topic"] == self.topic:
+                if result.topic == self.topic:
                     message_count += 1
             except errors.KafkaTimeoutError as exc:
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
