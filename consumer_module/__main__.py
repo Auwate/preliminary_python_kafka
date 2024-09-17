@@ -2,6 +2,7 @@ import os
 import asyncio
 import signal
 import datetime
+import time
 from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
@@ -11,7 +12,7 @@ async def handle_sigterm(sig: signal.Signals) -> None:
     Handle SIGTERM
     """
     print(f"\nINFO: {datetime.datetime.now()}: SIGNAL {sig} received...\n", flush=True)
-
+    time.sleep(5)
     for n in consumer_list:
         n.shutdown = True
 
