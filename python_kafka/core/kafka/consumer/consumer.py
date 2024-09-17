@@ -118,7 +118,7 @@ class Consumer:
         """
         self._shutdown = False
         self._consumer = KafkaConsumer(
-            [topic],
+            topic,
             bootstrap_servers=bs_servers,
             group_id=group,
             security_protocol=sec_protocol,
