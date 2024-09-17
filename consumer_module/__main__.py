@@ -2,6 +2,7 @@ import os
 import asyncio
 import signal
 import datetime
+from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
@@ -50,10 +51,11 @@ async def main():
                     .bootstrap_servers(bootstrap_servers)
                     .security_protocol(security_protocol)
                     .ssl_check_hostname(ssl_check_hostname)
-                    .group(group)
+                    .group(None)
                     .topic(topic)
                     .build()
             )
+            consumer.consumer.assign([TopicPartition(topic, i)])
             print("Consumer:", consumer, flush=True)
             tasks.append(
                 asyncio.create_task(

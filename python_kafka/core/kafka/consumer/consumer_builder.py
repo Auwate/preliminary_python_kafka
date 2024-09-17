@@ -228,9 +228,7 @@ class ConsumerBuilder:
         ValueError:
             If the group is not of type str.
         """
-        if not group:
-            return self
-        if not isinstance(group, str):
+        if group and not isinstance(group, str):
             raise ValueError("Group is not of type str.")
         self._group = group
         return self
