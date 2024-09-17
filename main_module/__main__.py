@@ -142,6 +142,8 @@ def setup_volume(
     except Exception as exc:
         return None, exc
 
+def setup_section() -> Exception:
+
 
 async def main():
     """
@@ -313,6 +315,14 @@ async def main():
         )
         raise exc
 
+    exc = delete_containers(moving_container)
+
+    if exc:
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for moving-container.\n"
+        )
+        raise exc
+
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
 
     print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
@@ -331,7 +341,9 @@ async def main():
     )
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n"
+        )
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
@@ -365,7 +377,7 @@ async def main():
 
     tasks: list[asyncio.Task] = [
         asyncio.create_task(coro=stop_containers(producer_container)),
-        asyncio.create_task(coro=stop_containers(consumer_container))
+        asyncio.create_task(coro=stop_containers(consumer_container)),
     ]
 
     await asyncio.gather(*tasks)
@@ -375,7 +387,9 @@ async def main():
     producer_logs, exc = gather_logs(producer_container)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for producer container")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for producer container"
+        )
         raise exc
 
     consumer_logs, exc = gather_logs(consumer_container)

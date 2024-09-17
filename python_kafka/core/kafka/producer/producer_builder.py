@@ -9,7 +9,7 @@ class ProducerBuilder:
 
     def __init__(self):
         self._topic = "Test"
-        self._acks: int | str = 0 # Can be 0, 1 or "all"
+        self._acks: int | str = 0  # Can be 0, 1 or "all"
         self._bootstrap_servers = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False

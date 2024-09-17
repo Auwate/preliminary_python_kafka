@@ -60,7 +60,11 @@ async def main():
     security_protocol: str = os.environ["SECURITY_PROTOCOL"]
     ssl_check_hostname: bool = os.environ["SSL_CHECK_HOSTNAME"]
     producers: int = int(os.environ["PRODUCERS"])
-    acks: int | str = str(os.environ["ACKS"]) if os.environ["ACKS"] == "all" else int(os.environ["ACKS"])
+    acks: int | str = (
+        str(os.environ["ACKS"])
+        if os.environ["ACKS"] == "all"
+        else int(os.environ["ACKS"])
+    )
     topic: str = os.environ["TOPIC"]
     workers: int = int(os.environ["WORKERS"])
 
@@ -82,14 +86,11 @@ async def main():
                 .acks(acks)
                 .build()
             )
-            tasks.append(
-                asyncio.create_task(
-                    coro=producer.send_messages(executor)
-                )
-            )
+            tasks.append(asyncio.create_task(coro=producer.send_messages(executor)))
             producer_list.append(producer)
         except Exception as exc:
             raise exc
+
 
 if __name__ == "__main__":
     main_loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()

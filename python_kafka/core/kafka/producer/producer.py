@@ -62,15 +62,13 @@ class Producer:
                     topic=self.topic, value=f"Message {message_count+1}\n".encode()
                 )
                 result: RecordMetadata = await loop.run_in_executor(
-                    executor=executor,
-                    func=lambda: future.get(timeout=10)
+                    executor=executor, func=lambda: future.get(timeout=10)
                 )
 
                 if result.topic == self.topic:
                     message_count += 1
             except errors.KafkaTimeoutError as exc:
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
-
 
         self.producer.flush()
         return message_count

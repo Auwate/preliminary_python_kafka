@@ -1,9 +1,8 @@
-
 import argparse
 
 
 def create_parser() -> argparse.ArgumentParser:
-   
+
     parser = argparse.ArgumentParser(
         description="Configure Kafka producers, consumers, and other settings."
     )
@@ -13,14 +12,14 @@ def create_parser() -> argparse.ArgumentParser:
         "--producers",
         help="Type: int | Specify the number of producers that will send messages to Kafka.",
         type=int,
-        required=True
+        required=True,
     )
     parser.add_argument(
         "-C",
         "--consumers",
         help="Type: int | Specify the number of consumers that will read messages from Kafka.",
         type=int,
-        required=True
+        required=True,
     )
     parser.add_argument(
         "-BS",
@@ -56,7 +55,7 @@ def create_parser() -> argparse.ArgumentParser:
         "-A",
         "--acks",
         help="Type: int | str (Optional) The acknowledgement pattern between Kafka and producer."
-             "Values can be 0, 1 or 'all'",
+        "Values can be 0, 1 or 'all'",
         type=str,
     )
     parser.add_argument(
@@ -75,12 +74,14 @@ class CLIOptions:
         self, parser: argparse.ArgumentParser = None, args: list[str] = None
     ) -> None:
 
-        self._consumers = 5 # Default values in case nothing is changed
+        self._consumers = 5  # Default values in case nothing is changed
         self._producers = 5
         self._group = "Test_Group"
         self._topic = "Test_Topic"
-        self._acks: int | str = 0 # Values can be 0, 1, or "all"
-        self._workers: int = 10 # The amount of worker threads in the Producer container
+        self._acks: int | str = 0  # Values can be 0, 1, or "all"
+        self._workers: int = (
+            10  # The amount of worker threads in the Producer container
+        )
         self._bootstrap_server = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False
@@ -128,9 +129,9 @@ class CLIOptions:
 
     @workers.setter
     def workers(self, workers: int) -> None:
-        if not isinstance(workers, int):
+        if not str.isdigit(workers):
             raise ValueError("-W (--workers) must be a number")
-        self._workers = workers
+        self._workers = int(workers)
 
     @property
     def acks(self) -> int | str:
@@ -138,9 +139,12 @@ class CLIOptions:
 
     @acks.setter
     def acks(self, acks) -> None:
-        if not isinstance(acks, int) and not isinstance(acks, str):
+        if not str.isdigit(acks) and not isinstance(acks, str):
             raise ValueError("-A (--acks) must be 0, 1, or all.")
-        self._acks = acks
+        if str.isdigit(acks):
+            self._acks = int(acks)
+        else:
+            self._acks = acks
 
     @property
     def group(self) -> str:

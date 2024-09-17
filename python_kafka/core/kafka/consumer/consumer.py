@@ -1,4 +1,3 @@
-
 import asyncio
 import datetime
 import random
@@ -60,10 +59,12 @@ class Consumer:
         consumed = 0
         while not self.shutdown:
             try:
-                data: dict[TopicPartition, list[ConsumerRecord]] = self.consumer.poll(timeout_ms=timeout, max_records=max_records)
+                data: dict[TopicPartition, list[ConsumerRecord]] = self.consumer.poll(
+                    timeout_ms=timeout, max_records=max_records
+                )
                 if data:
                     for _, consumer_records in data.items():
-                    # Simulate processing delay for each batch of messages
+                        # Simulate processing delay for each batch of messages
                         consumed += len(consumer_records)
                 await asyncio.sleep(len(data) * 0.005 * random.randint(1, 10))
             except Exception as exc:  # pylint: disable=W0718
