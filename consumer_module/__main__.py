@@ -9,7 +9,7 @@ def handle_sigterm() -> None:
     """
     Handle SIGTERM
     """
-    print("Sigterm")
+    print(f"\nINFO: {datetime.datetime.now()}: SIG TERM RECEIVED...\n")
 
     for n in consumer_list:
         n.shutdown = True
@@ -31,7 +31,7 @@ async def main():
     timeout: int = 100
     max_records = 100
 
-    print(consumers)
+    print(f"\nINFO: {datetime.datetime.now()}: TEST MESSAGE\n")
 
     for _ in range(consumers):
         consumer: Consumer = (
