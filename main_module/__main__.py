@@ -363,7 +363,7 @@ async def main():
     print(f"\nINFO: {datetime.datetime.now()}: Sending terminate signal...\n")
 
     tasks: list[asyncio.Task] = [
-        # asyncio.create_task(stop_containers(producer_container)),
+        asyncio.create_task(coro=stop_containers(producer_container)),
         asyncio.create_task(coro=stop_containers(consumer_container))
     ]
 
@@ -371,11 +371,11 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: Gathering diagnostics...\n")
 
-    # producer_logs, exc = gather_logs(producer_container)
+    producer_logs, exc = gather_logs(producer_container)
 
-    # if exc:
-    #     print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for producer container")
-    #     raise exc
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for producer container")
+        raise exc
 
     consumer_logs, exc = gather_logs(consumer_container)
 
@@ -387,7 +387,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: Deleting containers...\n")
 
-    # exc = delete_containers(producer_container)
+    exc = delete_containers(producer_container)
 
     if exc:
         print(
@@ -405,7 +405,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: Producer results:\n--------\n")
 
-    # print(producer_logs)
+    print(producer_logs)
 
     print(f"\nINFO: {datetime.datetime.now()}: Consumer results:\n--------\n")
 
