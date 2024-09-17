@@ -94,9 +94,6 @@ async def main():
         except Exception as exc:
             raise exc
 
-    print("Ready!", flush=True)
-
-
 if __name__ == "__main__":
     loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
     try:
