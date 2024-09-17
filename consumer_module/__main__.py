@@ -7,7 +7,7 @@ from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-def handle_sigterm(sig: signal.Signals, frame: FrameType) -> None:
+def handle_sigterm(sig: signal.Signals) -> None:
     """
     Handle SIGTERM
     """
@@ -21,8 +21,18 @@ consumer_list: list[Consumer] = []
 tasks: list[asyncio.Task] = []
 
 async def main():
-    signal.signal(signal.SIGINT, handle_sigterm)
-    signal.signal(signal.SIGTERM, handle_sigterm)
+
+    loop = asyncio.get_event_loop()
+
+    loop.add_signal_handler(
+        signal.SIGTERM,
+        lambda s=signal.SIGTERM: asyncio.create_task(handle_sigterm(s))
+    )
+
+    loop.add_signal_handler(
+        signal.SIGTERM,
+        lambda s=signal.SIGINT: asyncio.create_task(handle_sigterm(s))
+    )
 
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
     security_protocol: str = os.environ["SECURITY_PROTOCOL"]
