@@ -2,6 +2,7 @@
 A wrapper class for the KafkaProducer class. Works in tandem with the producerBuilder.py file
 """
 
+import datetime
 from kafka import KafkaProducer, errors
 from ....configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
 
@@ -49,16 +50,17 @@ class Producer:
             raise ValueError("Shutdown is not of type bool.")
         self._shutdown = shutdown
 
-    async def send_messages(self) -> tuple[bool, Exception]:
-        message_count = 1
+    async def send_messages(self) -> int:
+        message_count = 0
         while not self.shutdown:
             try:
                 await self.producer.send(
-                    topic=self.topic, value=f"Message {message_count}\n".encode()
+                    topic=self.topic, value=f"Message {message_count+1}\n".encode()
                 )
                 message_count += 1
             except errors.KafkaTimeoutError as exc:
-                return False, exc
+                print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
+
 
         self.producer.flush()
-        return True, None
+        return message_count

@@ -315,13 +315,22 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
 
-    # producer_container, exc = spawn_containers(client, producer_image, "preliminary_python_kafka_kafka_network", env_args)
+    producer_container, exc = spawn_containers(
+        client,
+        producer_image,
+        "host",
+        env_args,
+        volumes=None,
+        mounts=docker.types.Mount(
+            source="secrets_volume",
+            target="/home/program/secrets_volume",
+            type="volume",
+        ),
+    )
 
-    # if exc:
-    #     print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n")
-    #     raise exc
-
-    # time.sleep(30)
+    if exc:
+        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for producer container\n")
+        raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
 
@@ -329,7 +338,7 @@ async def main():
         client,
         consumer_image,
         # "host",
-        "preliminary_python_kafka_kafka_network",
+        "host",
         env_args,
         volumes=None,
         mounts=docker.types.Mount(
