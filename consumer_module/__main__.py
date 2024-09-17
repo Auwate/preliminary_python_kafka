@@ -7,6 +7,7 @@ from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
+
 async def handle_sigterm(sig: signal.Signals) -> None:
     """
     Handle SIGTERM
@@ -29,7 +30,10 @@ async def handle_sigterm(sig: signal.Signals) -> None:
     except Exception as exc:
         raise exc
 
-    print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n", flush=True)
+    print(
+        f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n",
+        flush=True,
+    )
 
     time.sleep(4)
 
@@ -39,18 +43,17 @@ async def handle_sigterm(sig: signal.Signals) -> None:
 consumer_list: list[Consumer] = []
 tasks: list[asyncio.Task] = []
 
+
 async def main():
 
     loop = asyncio.get_event_loop()
 
     loop.add_signal_handler(
-        signal.SIGTERM,
-        lambda s=signal.SIGTERM: asyncio.create_task(handle_sigterm(s))
+        signal.SIGTERM, lambda s=signal.SIGTERM: asyncio.create_task(handle_sigterm(s))
     )
 
     loop.add_signal_handler(
-        signal.SIGINT,
-        lambda s=signal.SIGINT: asyncio.create_task(handle_sigterm(s))
+        signal.SIGINT, lambda s=signal.SIGINT: asyncio.create_task(handle_sigterm(s))
     )
 
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
@@ -72,17 +75,19 @@ async def main():
         try:
             consumer: Consumer = (
                 ConsumerBuilder()
-                    .bootstrap_servers(bootstrap_servers)
-                    .security_protocol(security_protocol)
-                    .ssl_check_hostname(ssl_check_hostname)
-                    .group(group)
-                    .topic(None)
-                    .build()
+                .bootstrap_servers(bootstrap_servers)
+                .security_protocol(security_protocol)
+                .ssl_check_hostname(ssl_check_hostname)
+                .group(group)
+                .topic(None)
+                .build()
             )
             consumer.consumer.assign([TopicPartition(topic, i)])
             tasks.append(
                 asyncio.create_task(
-                    coro = consumer.consume_messages(timeout=timeout, max_records=max_records)
+                    coro=consumer.consume_messages(
+                        timeout=timeout, max_records=max_records
+                    )
                 )
             )
             consumer_list.append(consumer)
@@ -91,10 +96,11 @@ async def main():
 
     print("Ready!", flush=True)
 
+
 if __name__ == "__main__":
     loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
     try:
-        loop.create_task(coro = main())
+        loop.create_task(coro=main())
         loop.run_forever()
     except KeyboardInterrupt:
         print("Interrupted.", flush=True)

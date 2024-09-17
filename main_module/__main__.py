@@ -20,19 +20,13 @@ from python_kafka.core.kafka.admin.admin_builder import AdminBuilder
 from python_kafka.core.kafka.admin.admin import Admin
 from python_kafka.core.cli.parse import CLIOptions
 
+
 def build_image(
-    client: docker.DockerClient,
-    path: str,
-    dockerfile: str,
-    tag: str
+    client: docker.DockerClient, path: str, dockerfile: str, tag: str
 ) -> tuple[Image, Exception]:
     try:
         image, logs = client.images.build(
-            path = path,
-            dockerfile = dockerfile,
-            tag=tag,
-            rm=True,
-            nocache=True
+            path=path, dockerfile=dockerfile, tag=tag, rm=True, nocache=True
         )
 
         for n in logs:
@@ -43,6 +37,7 @@ def build_image(
 
     return image, None
 
+
 def spawn_containers(
     client: docker.DockerClient,
     image: Image,
@@ -50,7 +45,7 @@ def spawn_containers(
     environment_variables: dict[str, str | int | bool],
     volumes: Volume = None,
     mounts: docker.types.Mount = None,
-    delete: bool = False
+    delete: bool = False,
 ) -> tuple[Container, Exception]:
     if mounts:
         mounts = [mounts]
@@ -69,22 +64,25 @@ def spawn_containers(
             detach=True,
             volumes=volumes,
             mounts=mounts,
-            auto_remove=delete
+            auto_remove=delete,
         )
     except Exception as exc:  # pylint: disable=W0718
         return None, exc
     return container, None
 
-def setup_topics(
-    topic_name: str,
-    num_partitions: int,
-    admin: Admin
-) -> Exception:
+
+def setup_topics(topic_name: str, num_partitions: int, admin: Admin) -> Exception:
     if admin.get_topic_details(topic_name) is None:
-        success, exc = admin.create_topic(topic_name=topic_name, num_partitions=num_partitions, repli_factor=1, timeout_ms=1000)
+        success, exc = admin.create_topic(
+            topic_name=topic_name,
+            num_partitions=num_partitions,
+            repli_factor=1,
+            timeout_ms=1000,
+        )
         if not success:
             return exc
     return None
+
 
 async def stop_containers(
     container: Container,
@@ -95,9 +93,9 @@ async def stop_containers(
         return exc
     return None
 
+
 def check_image_exists(
-    client: docker.DockerClient,
-    tag: str
+    client: docker.DockerClient, tag: str
 ) -> tuple[Image, Exception]:
     try:
         image: Image = client.images.get(tag)
@@ -107,28 +105,29 @@ def check_image_exists(
         return None, exc
     return image, None
 
-def gather_logs(
-    container: Container
-) -> tuple[str, Exception]:
+
+def gather_logs(container: Container) -> tuple[str, Exception]:
     try:
         logs = container.logs().decode()
     except docker.errors.APIError as exc:
         return None, exc
     return logs, None
 
-def delete_containers(
-    container: Container
-) -> Exception:
+
+def delete_containers(container: Container) -> Exception:
     try:
         if container.status == "exited":
-            raise docker.errors.APIError("Container had already exited before deleting.")
+            raise docker.errors.APIError(
+                "Container had already exited before deleting."
+            )
         container.remove(v=True)
     except docker.errors.APIError as exc:
         return exc
     return None
 
+
 def setup_volume(
-    client: docker.DockerClient
+    client: docker.DockerClient,
 ) -> tuple[docker.models.volumes.Volume, Exception]:
     try:
         client.volumes.get("secrets_volume").remove()
@@ -142,6 +141,7 @@ def setup_volume(
         return None, exc
     except Exception as exc:
         return None, exc
+
 
 async def main():
     """
@@ -158,15 +158,15 @@ async def main():
         "TOPIC": cli.topic,
         "BOOTSTRAP_SERVERS": cli.bootstrap_server,
         "SECURITY_PROTOCOL": cli.security_protocol,
-        "SSL_CHECK_HOSTNAME": cli.ssl_check_hostname
+        "SSL_CHECK_HOSTNAME": cli.ssl_check_hostname,
     }
     client = docker.from_env()
     admin_client: Admin = (
         AdminBuilder()
-            .bootstrap_servers(cli.bootstrap_server)
-            .security_protocol(cli.security_protocol)
-            .ssl_check_hostname(cli.ssl_check_hostname)
-            .build()
+        .bootstrap_servers(cli.bootstrap_server)
+        .security_protocol(cli.security_protocol)
+        .ssl_check_hostname(cli.ssl_check_hostname)
+        .build()
     )
     consumer_tag = "consumer-image"
     producer_tag = "producer-image"
@@ -178,7 +178,9 @@ async def main():
     if not producer_image:
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for producer image\n")
+            print(
+                f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for producer image\n"
+            )
             raise exc
 
         print(f"\nINFO: {datetime.datetime.now()}: Building producer image...\n")
@@ -190,11 +192,13 @@ async def main():
                 "build/containers/producers/",
             ),
             "Dockerfile",
-            "producer-image"
+            "producer-image",
         )
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for producer image\n")
+            print(
+                f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for producer image\n"
+            )
             raise exc
 
     consumer_image, exc = check_image_exists(client, consumer_tag)
@@ -202,7 +206,9 @@ async def main():
     if not consumer_image:
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for consumer image\n")
+            print(
+                f"\nERROR: {datetime.datetime.now()}: An error occurred in check_image_exists for consumer image\n"
+            )
             raise exc
 
         print(f"\nINFO: {datetime.datetime.now()}: Building consumer image...\n")
@@ -214,11 +220,13 @@ async def main():
                 "build/containers/consumers/",
             ),
             "Dockerfile",
-            "consumer-image"
+            "consumer-image",
         )
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for consumer image\n")
+            print(
+                f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image for consumer image\n"
+            )
             raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Setting up topic in Kafka cluster...\n")
@@ -226,7 +234,9 @@ async def main():
     exc: Exception = setup_topics(cli.topic, cli.consumers, admin_client)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_topics.\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_topics.\n"
+        )
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Creating secrets volume...\n")
@@ -234,7 +244,9 @@ async def main():
     volume, exc = setup_volume(client)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_volume.\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_volume.\n"
+        )
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Building container to move volumes...\n")
@@ -242,12 +254,16 @@ async def main():
     moving_image, exc = check_image_exists(client, "moving-image")
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_volume.\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in setup_volume.\n"
+        )
         raise exc
 
     if not moving_image:
 
-        print(f"\nINFO: {datetime.datetime.now()}: Building moving container image...\n")
+        print(
+            f"\nINFO: {datetime.datetime.now()}: Building moving container image...\n"
+        )
 
         moving_image, exc = build_image(
             client,
@@ -256,11 +272,13 @@ async def main():
                 "build/containers/consumers/",
             ),
             "Dockerfile",
-            "moving-image"
+            "moving-image",
         )
 
         if exc:
-            print(f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image.\n")
+            print(
+                f"\nERROR: {datetime.datetime.now()}: An error occurred in build_image.\n"
+            )
             raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Moving secrets into secrets_volume...\n")
@@ -274,19 +292,23 @@ async def main():
         mounts=docker.types.Mount(
             source=os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets"),
             target="/home/program/secrets/",
-            type="bind"
+            type="bind",
         ),
-        delete=True
+        delete=True,
     )
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for moving-image.\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_containers for moving-image.\n"
+        )
         raise exc
 
     exc = await stop_containers(moving_container)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in stop_containers for moving-container.\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in stop_containers for moving-container.\n"
+        )
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
@@ -306,15 +328,21 @@ async def main():
     consumer_container, exc = spawn_containers(
         client,
         consumer_image,
-        #"host",
+        # "host",
         "preliminary_python_kafka_kafka_network",
         env_args,
         volumes=None,
-        mounts=docker.types.Mount(source="secrets_volume", target="/home/program/secrets_volume", type="volume")
+        mounts=docker.types.Mount(
+            source="secrets_volume",
+            target="/home/program/secrets_volume",
+            type="volume",
+        ),
     )
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_container for consumer container\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in spawn_container for consumer container\n"
+        )
         raise exc
 
     time.sleep(30)
@@ -326,7 +354,7 @@ async def main():
     print(f"\nINFO: {datetime.datetime.now()}: Sending terminate signal...\n")
 
     tasks: list[asyncio.Task] = [
-        #asyncio.create_task(stop_containers(producer_container)),
+        # asyncio.create_task(stop_containers(producer_container)),
         asyncio.create_task(coro=stop_containers(consumer_container))
     ]
 
@@ -334,7 +362,7 @@ async def main():
 
     print(f"\nINFO: {datetime.datetime.now()}: Gathering diagnostics...\n")
 
-    #producer_logs, exc = gather_logs(producer_container)
+    # producer_logs, exc = gather_logs(producer_container)
 
     # if exc:
     #     print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for producer container")
@@ -343,21 +371,27 @@ async def main():
     consumer_logs, exc = gather_logs(consumer_container)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for consumer container\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in gather_logs for consumer container\n"
+        )
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Deleting containers...\n")
 
-    #exc = delete_containers(producer_container)
+    # exc = delete_containers(producer_container)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for producer container\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for producer container\n"
+        )
         raise exc
 
     exc = delete_containers(consumer_container)
 
     if exc:
-        print(f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for consumer container\n")
+        print(
+            f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for consumer container\n"
+        )
         raise exc
 
     print(f"\nINFO: {datetime.datetime.now()}: Producer results:\n--------\n")
@@ -369,6 +403,7 @@ async def main():
     print(consumer_logs)
 
     print(f"\nINFO: {datetime.datetime.now()}: End of logs.\n")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

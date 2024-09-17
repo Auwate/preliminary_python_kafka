@@ -83,7 +83,7 @@ def create_parser() -> argparse.ArgumentParser:
     Returns:
     --------
     argparse.ArgumentParser
-        The argument parser with predefined arguments for producers, consumers, 
+        The argument parser with predefined arguments for producers, consumers,
         bootstrap server, security protocol, SSL hostname check, group, and topic.
     """
     parser = argparse.ArgumentParser(
@@ -95,51 +95,59 @@ def create_parser() -> argparse.ArgumentParser:
         "--producers",
         help="Type: int | Specify the number of producers that will send messages to Kafka.",
         type=int,
+        required=True
     )
     parser.add_argument(
         "-C",
         "--consumers",
         help="Type: int | Specify the number of consumers that will read messages from Kafka.",
         type=int,
+        required=True
     )
     parser.add_argument(
         "-BS",
         "--bootstrap-server",
-        help="Type: str | Optional | The location of the Kafka cluster (default: localhost:9092).",
+        help="Type: str (Optional) The location of the Kafka cluster (default: localhost:9092).",
         type=str,
     )
     parser.add_argument(
         "-SP",
         "--security-protocol",
-        help="Type: str | Optional | The security protocol for Kafka communication (default: SSL).",
+        help="Type: str (Optional) The security protocol for Kafka communication (default: SSL).",
         type=str,
     )
     parser.add_argument(
         "-SCHN",
         "--ssl-check-hostname",
-        help="Type: bool | Optional | A flag to enable SSL hostname verification (default: False).",
+        help="Type: bool (Optional) A flag to enable SSL hostname verification (default: False).",
         type=bool,
     )
     parser.add_argument(
         "-G",
         "--group",
-        help="Type: str | Optional | The Kafka consumer group ID (default: Test Group).",
+        help="Type: str (Optional) The Kafka consumer group ID (default: Test Group).",
         type=str,
     )
     parser.add_argument(
         "-T",
         "--topic",
-        help="Type: str | Optional | The Kafka topic (default: Test Topic).",
+        help="Type: str (Optional) The Kafka topic (default: Test Topic).",
         type=str,
+    )
+    parser.add_argument(
+        "-A",
+        "--acks",
+        help="Type: int | str (Optional) The Kafka topic (default: Test Topic)."
+             "Values can be 0, 1 or 'all'",
+        type=int | str,
     )
 
     return parser
 
 
-
 class CLIOptions:
     """
-    A class to handle and validate command-line arguments for Kafka producers, consumers, 
+    A class to handle and validate command-line arguments for Kafka producers, consumers,
     and additional settings like bootstrap server, security protocol, and SSL hostname check.
 
     Attributes:
@@ -210,10 +218,11 @@ class CLIOptions:
         args : list[str], optional
             A list of command-line arguments to parse. If not provided, defaults to `sys.argv`.
         """
-        self._consumers = 0
-        self._producers = 0
+        self._consumers = 5 # Default values in case nothing is changed
+        self._producers = 5
         self._group = "Test_Group"
         self._topic = "Test_Topic"
+        self._acks: int | str = 0 # Values can be 0, 1, or "all"
         self._bootstrap_server = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False
@@ -265,6 +274,19 @@ class CLIOptions:
 
         if args.topic is not None:
             self.topic = args.topic
+
+        if args.acks is not None:
+            self.acks = args.acks
+
+    @property
+    def acks(self) -> int | str:
+        return self._acks
+
+    @acks.setter
+    def acks(self, acks) -> None:
+        if not isinstance(acks, int) and not isinstance(acks, str):
+            raise ValueError("Acks not of type str or int.")
+        self._acks = acks
 
     @property
     def group(self) -> str:

@@ -11,7 +11,7 @@ mkdir ./secrets
 cp -r ../secrets_volume/* ./secrets
 
 # Get dependencies
-python3 -m pip install poetry --quiet
+python3 -m pip install poetry --quiet --root-user-action
 python3 -m poetry install --no-root --quiet
 
 # Run consumer application
