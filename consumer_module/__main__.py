@@ -42,6 +42,7 @@ async def main():
     print("BS:", bootstrap_servers, "SP:", security_protocol, "SCH", ssl_check_hostname, "Group", group, "Topic", topic, "Consumers:", consumers)
 
     for _ in range(consumers):
+        print("INSIDE LOOP")
         consumer: Consumer = (
             ConsumerBuilder()
                 .bootstrap_servers(bootstrap_servers)
@@ -57,6 +58,7 @@ async def main():
             )
         )
         consumer_list.append(consumer)
+
     print("Waiting for gather...")
     await asyncio.gather(*tasks)
 
