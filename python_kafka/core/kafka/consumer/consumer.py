@@ -62,8 +62,9 @@ class Consumer:
             try:
                 data: dict[TopicPartition, list[ConsumerRecord]] = self.consumer.poll(timeout_ms=timeout, max_records=max_records)
                 if data:
+                    for _, consumer_records in data.items():
                     # Simulate processing delay for each batch of messages
-                    consumed += len(data)
+                        consumed += len(consumer_records)
                 await asyncio.sleep(len(data) * 0.005 * random.randint(1, 10))
             except Exception as exc:  # pylint: disable=W0718
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
