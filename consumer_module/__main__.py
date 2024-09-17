@@ -2,15 +2,18 @@ import os
 import asyncio
 import signal
 import datetime
+import time
 from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-async def handle_sigterm(sig: signal.Signals, loop: asyncio.AbstractEventLoop) -> None:
+async def handle_sigterm(sig: signal.Signals) -> None:
     """
     Handle SIGTERM
     """
     print(f"\nINFO: {datetime.datetime.now()}: SIGNAL {sig} received...\n", flush=True)
+
+    time.sleep(5)
 
     for n in consumer_list:
         n.shutdown = True
@@ -28,7 +31,7 @@ async def handle_sigterm(sig: signal.Signals, loop: asyncio.AbstractEventLoop) -
 
     print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n", flush=True)
 
-    loop.close()
+    asyncio.get_event_loop().close()
 
 
 consumer_list: list[Consumer] = []
@@ -40,12 +43,12 @@ async def main():
 
     loop.add_signal_handler(
         signal.SIGTERM,
-        lambda s=signal.SIGTERM: asyncio.create_task(handle_sigterm(s, loop))
+        lambda s=signal.SIGTERM: asyncio.create_task(handle_sigterm(s))
     )
 
     loop.add_signal_handler(
         signal.SIGINT,
-        lambda s=signal.SIGINT: asyncio.create_task(handle_sigterm(s, loop))
+        lambda s=signal.SIGINT: asyncio.create_task(handle_sigterm(s))
     )
 
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
