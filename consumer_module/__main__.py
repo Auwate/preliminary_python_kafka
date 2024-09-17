@@ -7,7 +7,7 @@ from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-def handle_sigterm(sig: signal.Signals) -> None:
+async def handle_sigterm(sig: signal.Signals) -> None:
     """
     Handle SIGTERM
     """
