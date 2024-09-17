@@ -2,7 +2,6 @@ import os
 import asyncio
 import signal
 import datetime
-from types import FrameType
 from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
@@ -49,12 +48,7 @@ async def main():
     timeout: int = 100
     max_records = 100
 
-    print(f"\nINFO: {datetime.datetime.now()}: TEST MESSAGE\n", flush=True)
-
-    print("BS:", bootstrap_servers, "SP:", security_protocol, "SCH", ssl_check_hostname, "Group", group, "Topic", topic, "Consumers:", consumers, flush=True)
-
     for i in range(consumers):
-        print("INSIDE LOOP NUMBER", i, flush=True)
         try:
             consumer: Consumer = (
                 ConsumerBuilder()
@@ -66,17 +60,15 @@ async def main():
                     .build()
             )
             consumer.consumer.assign([TopicPartition(topic, i)])
-            print("Consumer:", consumer, flush=True)
             tasks.append(
                 asyncio.create_task(
                     coro = consumer.consume_messages(timeout=timeout, max_records=max_records)
                 )
             )
             consumer_list.append(consumer)
-            print("CL:", consumer_list, "Tasks:", tasks, flush=True)
         except Exception as exc:
             raise exc
-
+    print(asyncio.all_tasks())
     print("Waiting for gather...", flush=True)
     await asyncio.gather(*tasks)
 
