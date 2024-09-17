@@ -306,8 +306,8 @@ async def main():
     consumer_container, exc = spawn_containers(
         client,
         consumer_image,
-        "host",
-        #"preliminary_python_kafka_kafka_network",
+        #"host",
+        "preliminary_python_kafka_kafka_network",
         env_args,
         volumes=None,
         mounts=docker.types.Mount(source="secrets_volume", target="/home/program/secrets_volume", type="volume")

@@ -248,6 +248,6 @@ class ConsumerBuilder:
             bs_servers=self._bootstrap_servers,
             sec_protocol=self._security_protocol,
             ssl_check_hostname=self._ssl_check_hostname,
-            topic=self._topic,
+            topic=[self._topic],
             group=self._group
         )
