@@ -24,7 +24,13 @@ async def main():
 
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
     security_protocol: str = os.environ["SECURITY_PROTOCOL"]
-    ssl_check_hostname: bool = bool(os.environ["SSL_CHECK_HOSTNAME"])
+    ssl_check_hostname: bool = os.environ["SSL_CHECK_HOSTNAME"]
+
+    if ssl_check_hostname == "False":
+        ssl_check_hostname = False
+    else:
+        ssl_check_hostname = True
+
     consumers: int = int(os.environ["CONSUMERS"])
     group: str = os.environ["GROUP"]
     topic: str = os.environ["TOPIC"]
