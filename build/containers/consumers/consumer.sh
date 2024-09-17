@@ -15,4 +15,4 @@ python3 -m pip install poetry --quiet
 python3 -m poetry install --no-root --quiet
 
 # Run consumer application
-python3 -m poetry run python3 -m consumer_module
+exec python3 -m poetry run python3 -m consumer_module

@@ -213,9 +213,7 @@ class Consumer:
         the shutdown flag is set to True.
         """
         consumed = 0
-        print("Starting...", flush=True)
         while not self.shutdown:
-            print(asyncio.all_tasks())
             try:
                 data = self.consumer.poll(timeout_ms=timeout, max_records=max_records)
                 if data:
