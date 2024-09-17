@@ -27,7 +27,7 @@ jobs:
                 python-version: ${{ matrix.python-version }}
             - name: Set up SSL dependencies and launch docker-compose.yml
               run: |
-                cd build/
+                cd build/ssl_dependencies/
                 chmod 777 build.sh
                 sudo ./build.sh
                 cd ..
