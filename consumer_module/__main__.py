@@ -52,7 +52,7 @@ async def main():
                     .security_protocol(security_protocol)
                     .ssl_check_hostname(ssl_check_hostname)
                     .group(None)
-                    .topic(topic)
+                    .topic(None)
                     .build()
             )
             consumer.consumer.assign([TopicPartition(topic, i)])
