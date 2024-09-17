@@ -21,6 +21,7 @@ tasks: list[asyncio.Task] = []
 async def main():
     loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
     loop.add_signal_handler(signal.SIGTERM, handle_sigterm)
+    loop.add_signal_handler(signal.SIGINT, handle_sigterm)
 
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
     security_protocol: str = os.environ["SECURITY_PROTOCOL"]
