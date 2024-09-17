@@ -52,6 +52,7 @@ async def main():
                 .topic(topic)
                 .build()
         )
+        print("Consumer:", consumer)
         tasks.append(
             asyncio.create_task(
                 coro = consumer.consume_messages(timeout=timeout, max_records=max_records)
