@@ -13,7 +13,7 @@ async def handle_sigterm(sig: signal.Signals) -> None:
     """
     print(f"\nINFO: {datetime.datetime.now()}: SIGNAL {sig} received...\n", flush=True)
 
-    time.sleep(5)
+    time.sleep(4)
 
     for n in consumer_list:
         n.shutdown = True
@@ -31,9 +31,9 @@ async def handle_sigterm(sig: signal.Signals) -> None:
 
     print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n", flush=True)
 
-    time.sleep(5)
+    time.sleep(4)
 
-    asyncio.get_event_loop().close()
+    asyncio.get_event_loop().stop()
 
 
 consumer_list: list[Consumer] = []
@@ -92,5 +92,10 @@ async def main():
     print("Ready!", flush=True)
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().create_task(coro = main())
-    asyncio.get_event_loop().run_forever()
+    try:
+        asyncio.get_event_loop().create_task(coro = main())
+        asyncio.get_event_loop().run_forever()
+    except Exception as exc:
+        print(exc)
+    finally:
+        asyncio.get_event_loop().close()
