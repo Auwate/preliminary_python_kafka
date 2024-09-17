@@ -2,19 +2,33 @@ import os
 import asyncio
 import signal
 import datetime
-import time
 from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-async def handle_sigterm(sig: signal.Signals) -> None:
+async def handle_sigterm(sig: signal.Signals, loop: asyncio.AbstractEventLoop) -> None:
     """
     Handle SIGTERM
     """
     print(f"\nINFO: {datetime.datetime.now()}: SIGNAL {sig} received...\n", flush=True)
-    time.sleep(5)
+
     for n in consumer_list:
         n.shutdown = True
+
+    await asyncio.gather(*tasks)
+
+    amount_consumed = 0
+
+    try:
+        for task in tasks:
+            amount_consumed += task.result()
+
+    except Exception as exc:
+        raise exc
+
+    print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n", flush=True)
+
+    loop.close()
 
 
 consumer_list: list[Consumer] = []
@@ -26,12 +40,7 @@ async def main():
 
     loop.add_signal_handler(
         signal.SIGTERM,
-        lambda s=signal.SIGTERM: asyncio.create_task(handle_sigterm(s))
-    )
-
-    loop.add_signal_handler(
-        signal.SIGINT,
-        lambda s=signal.SIGINT: asyncio.create_task(handle_sigterm(s))
+        lambda s=signal.SIGTERM: asyncio.create_task(handle_sigterm(s, loop))
     )
 
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
@@ -69,20 +78,6 @@ async def main():
             consumer_list.append(consumer)
         except Exception as exc:
             raise exc
-    print(asyncio.all_tasks())
-    print("Waiting for gather...", flush=True)
-    await asyncio.gather(*tasks)
-
-    amount_consumed = 0
-
-    try:
-        for task in tasks:
-            amount_consumed += task.result()
-
-    except Exception as exc:
-        raise exc
-
-    print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n", flush=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
