@@ -72,7 +72,7 @@ options:
                         Type: str (Optional) The Kafka consumer group ID (default: Test Group).
   -T TOPIC, --topic TOPIC
                         Type: str (Optional) The Kafka topic (default: Test Topic).
-  -A ACKS, --acks ACKS  Type: int | str (Optional) The acknowledgement pattern between Kafka and producer.Values can be 0, 1 or 'all'
+  -A ACKS, --acks ACKS  Type: str (Optional) The acknowledgement pattern between Kafka and producer.Values can be 0, 1 or 'all'
   -W WORKERS, --workers WORKERS
                         Type: int (Optional) The amount of worker threads that will handle blocking code.
 ```
