@@ -50,7 +50,6 @@ async def main():
                 .ssl_check_hostname(ssl_check_hostname)
                 .group(group)
                 .topic(topic)
-                .build()
         )
         print("Consumer:", consumer)
         tasks.append(
