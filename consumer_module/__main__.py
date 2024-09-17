@@ -43,22 +43,26 @@ async def main():
 
     for i in range(consumers):
         print("INSIDE LOOP NUMBER", i)
-        consumer: Consumer = (
-            ConsumerBuilder()
-                .bootstrap_servers(bootstrap_servers)
-                .security_protocol(security_protocol)
-                .ssl_check_hostname(ssl_check_hostname)
-                .group(group)
-                .topic(topic)
-        )
-        print("Consumer:", consumer)
-        tasks.append(
-            asyncio.create_task(
-                coro = consumer.consume_messages(timeout=timeout, max_records=max_records)
+        try:
+            consumer: Consumer = (
+                ConsumerBuilder()
+                    .bootstrap_servers(bootstrap_servers)
+                    .security_protocol(security_protocol)
+                    .ssl_check_hostname(ssl_check_hostname)
+                    .group(group)
+                    .topic(topic)
+                    .build()
             )
-        )
-        consumer_list.append(consumer)
-        print("CL:", consumer_list, "Tasks:", tasks)
+            print("Consumer:", consumer)
+            tasks.append(
+                asyncio.create_task(
+                    coro = consumer.consume_messages(timeout=timeout, max_records=max_records)
+                )
+            )
+            consumer_list.append(consumer)
+            print("CL:", consumer_list, "Tasks:", tasks)
+        except Exception as exc:
+            raise exc
 
     print("Waiting for gather...")
     await asyncio.gather(*tasks)
