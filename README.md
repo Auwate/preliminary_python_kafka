@@ -1,124 +1,123 @@
 # CIARA Kafka Testing w/ `kafka-python-ng`
 
-# SSL
+This is a project that was built during my internship at CIARA. It is a Python CLI tool that provides efficiency benchmarking between a producer container, consumer container, and Kafka cluster.
 
-The following subheaders are the steps you need to take to set up SSL encryption for data in-transit for the Kafka node. This is currently **not optional**, as SSL is hardcoded into the `docker-compose.yml` file.
+To get started, please follow the `Prerequisities` header below and then to `Running the application`.
 
-This assumes you are at the root, being `/preliminary_python_kafka`
+**IMPORTANT**
 
-## 1: Setting up `secrets/`
+This application was built on a Unix environment, so directions are going to be Unix-centric. In addition, this application may behave as intended on a Windows host.
 
-```
-mkdir secrets/
-cd secrets/
-```
+# Prerequisities
 
-## 2: Creating input files
+## Virtual environment
 
-```
-cat >answers-ca <<EOF
-US
-FL
-Miami
-FIU
-CIARA
-Kafka CA Testing
+This project uses `Poetry`, so to run this application you will need to install it either locally or as root. We recommend installing it via a `venv`, and you do this using `python3 -m venv venv`.
 
-EOF
-```
-```
-cat >answers-broker <<EOF
-US
-FL
-Miami
-FIU
-CIARA
-172.27.0.2
+Once you do that, please type `source venv/bin/activate`.
 
+### Poetry
 
+After creating your virtual environment, please type `pip install poetry`.
 
-EOF
-```
-```
-cat >answers-client <<EOF
-US
-FL
-Miami
-FIU
-CIARA
-172.27.0.1
+Once installed, please `cd` into `preliminary_python_kafka` and type `poetry install --no-root`.
 
+If this doesn't work, please try `python3 -m poetry install --no-root`.
 
+## SSL Dependencies
 
-EOF
-```
-## 3: Creating CA
+In `./preliminary_python_kafka/build/ssl_dependencies`, you will find the `build.sh` script. Please run this file and it should build the dependencies and launch Kafka.
+
+## Troubleshooting
+
+If `build.sh` is not working, please try running `chmod 777 build.sh` and then running again.
+
+# Running the application
+
+With your virtual environment set up and the SSL dependencies having been built, we can now start running the application.
+
+The basic syntax is:
 
 ```
-openssl genpkey -algorithm RSA -out ca.key
-openssl req -new -x509 -key ca.key -out ca.crt -days 3650 < answers-ca
+python3 -m main_module
 ```
 
-## 4: Creating the broker's key, CSR, signed certificate, and keystore
+To see all arguments and parameters, please type:
 
 ```
-openssl genpkey -algorithm RSA -out broker.key
-openssl req -new -key broker.key -out broker.csr < answers-broker
-openssl x509 -req -in broker.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out broker.crt -days 365
-openssl pkcs12 -export -in broker.crt -inkey broker.key -out broker.p12 -name broker -passout pass:password
-openssl pkcs12 -in broker.p12 -out broker-key.pem -nocerts -nodes -passin pass:password
-openssl pkcs12 -in broker.p12 -out broker-cert.pem -clcerts -nokeys -passin pass:password
+python3 -m main_module --help
 ```
 
-## 5: Creating the client's key, CSR, signed certificate, and keystore
+You will see a message like this pop up:
 
 ```
-openssl genpkey -algorithm RSA -out client.key
-openssl req -new -key client.key -out client.csr < answers-client
-openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365
-openssl pkcs12 -export -in client.crt -inkey client.key -out client.p12 -name client -passout pass:password
-openssl pkcs12 -in client.p12 -out client-key.pem -nocerts -nodes -passin pass:password
-openssl pkcs12 -in client.p12 -out client-cert.pem -clcerts -nokeys -passin pass:password
+usage: __main__.py [-h] -P PRODUCERS -C CONSUMERS [-BS BOOTSTRAP_SERVER] [-SP SECURITY_PROTOCOL] [-SCHN SSL_CHECK_HOSTNAME] [-G GROUP] [-T TOPIC] [-A ACKS]
+                   [-W WORKERS]
+
+Configure Kafka producers, consumers, and other settings.
+
+options:
+  -h, --help            show this help message and exit
+  -P PRODUCERS, --producers PRODUCERS
+                        Type: int | Specify the number of producers that will send messages to Kafka.
+  -C CONSUMERS, --consumers CONSUMERS
+                        Type: int | Specify the number of consumers that will read messages from Kafka.
+  -BS BOOTSTRAP_SERVER, --bootstrap-server BOOTSTRAP_SERVER
+                        Type: str (Optional) The location of the Kafka cluster (default: localhost:9092).
+  -SP SECURITY_PROTOCOL, --security-protocol SECURITY_PROTOCOL
+                        Type: str (Optional) The security protocol for Kafka communication (default: SSL).
+  -SCHN SSL_CHECK_HOSTNAME, --ssl-check-hostname SSL_CHECK_HOSTNAME
+                        Type: bool (Optional) A flag to enable SSL hostname verification (default: False).
+  -G GROUP, --group GROUP
+                        Type: str (Optional) The Kafka consumer group ID (default: Test Group).
+  -T TOPIC, --topic TOPIC
+                        Type: str (Optional) The Kafka topic (default: Test Topic).
+  -A ACKS, --acks ACKS  Type: str (Optional) The acknowledgement pattern between Kafka and producer.Values can be 0, 1 or 'all'
+  -W WORKERS, --workers WORKERS
+                        Type: int (Optional) The amount of worker threads that will handle blocking code.
 ```
 
-## 6: Create broker truststore
+# DEV - Setup
 
-```
-keytool -import -alias client -file client.crt -keystore broker.truststore.p12 -storetype pkcs12 -storepass password -noprompt
-keytool -import -alias ca -file ca.crt -keystore broker.truststore.p12 -storetype pkcs12 -storepass password -noprompt
-```
+## Poetry
 
-## 7: Create client truststore
+This project uses `Poetry` for dependency management and execution. To use this, please create a virtual environment and run `pip install poetry`.
 
-```
-keytool -import -alias broker -file broker.crt -keystore client.truststore.p12 -storetype pkcs12 -storepass password -noprompt
-keytool -import -alias ca -file ca.crt -keystore client.truststore.p12 -storetype pkcs12 -storepass password -noprompt
-```
+Next, please go to the root of the project and run `poetry install --with dev --no-root`
 
-## 8: Create password files
+## Tox
 
-```
-echo password > kafka_broker_creds
-echo password > kafka_broker_key_creds
-```
+This project uses `Tox` for standardized and automated testing. To use this, please run `poetry run tox`.
 
-## 9: Create PEM files (required for `kafka-python-ng`)
+If you would like to specify a specific test to run, use `poetry run tox -e <TEST_NAME>`
 
-```
-openssl x509 -in ca.crt -out ca.pem -outform PEM
-```
+# Update History
 
-## 10: Change permissions for `/secrets`
+## 09/17/2024
 
-```
-cd ..
+MAJOR UPDATE
 
-sudo chgrp 1000 secrets/ -R
-chmod g=u secrets -R
-```
+- Added argument parsing
+- Added consumer container
+- Added producer container
+- Added volumes for SSL encryption data
+- Added exception handling
+- Added documentation
 
-## 11: Run Kafka
+## 09/15/2024
 
-```
-docker-compose up -d
-```
+- Added kafka/producer
+- Added kafka/admin
+
+## 09/14/2024
+
+- Added kafka/consumer
+
+## 09/12/2024
+
+- Added build/
+    - Added build.sh
+- Added kafka/
+    - Added producer/
+        - Added builder abstraction for producer class
+- Added testing_producer_builder

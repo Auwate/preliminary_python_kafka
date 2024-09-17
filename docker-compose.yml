@@ -1,38 +1,3 @@
-# services:
-#   broker:
-#     image: apache/kafka:latest
-#     hostname: broker
-#     container_name: broker
-#     ports:
-#       - '9093:9093'
-#     volumes:
-#       - ./secrets:/etc/kafka/secrets
-#     environment:
-#       KAFKA_NODE_ID: 1
-#       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'SSL:SSL,CONTROLLER:PLAINTEXT,SSL-INTERNAL:SSL'
-#       KAFKA_ADVERTISED_LISTENERS: 'SSL://localhost:9093,SSL-INTERNAL://broker:19093'
-#       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-#       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-#       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-#       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-#       KAFKA_PROCESS_ROLES: 'broker,controller'
-#       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@broker:29093'
-#       KAFKA_LISTENERS: 'SSL://:9093,CONTROLLER://:29093,SSL-INTERNAL://:19093'
-#       KAFKA_INTER_BROKER_LISTENER_NAME: 'SSL-INTERNAL'
-#       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-#       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
-#       CLUSTER_ID: '4L6g3nShT-eMCtK--X86sw'
-
-#       # SSL Config
-#       KAFKA_SSL_KEYSTORE_TYPE: JKS
-#       KAFKA_SSL_TRUSTSTORE_TYPE: JKS
-#       KAFKA_SSL_KEYSTORE_FILENAME: server.keystore.jks
-#       KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka_broker_creds
-#       KAFKA_SSL_KEY_CREDENTIALS: kafka_broker_key_creds
-#       KAFKA_SSL_TRUSTSTORE_FILENAME: server.truststore.jks
-#       KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka_broker_creds
-#       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
-#       KAFKA_SSL_CLIENT_AUTH: required
 services:
   broker:
     image: apache/kafka:latest
@@ -44,6 +9,8 @@ services:
       - '29092:29092'
     volumes:
       - ./secrets:/etc/kafka/secrets
+    networks:
+      - kafka_network
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'SSL:SSL,CONTROLLER:PLAINTEXT,SSL-INTERNAL:SSL'
@@ -65,8 +32,14 @@ services:
       KAFKA_SSL_CLIENT_AUTH: required
       KAFKA_SSL_KEYSTORE_FILENAME: broker.p12
       KAFKA_SSL_KEYSTORE_TYPE: PKCS12
-      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka_broker_creds
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: kafka_broker_keystore_creds
+      KAFKA_SSL_KEYSTORE_LOCATION: broker.p12
       KAFKA_SSL_KEY_CREDENTIALS: kafka_broker_key_creds
       KAFKA_SSL_TRUSTSTORE_FILENAME: broker.truststore.p12
-      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka_broker_creds
+      KAFKA_SSL_TRUSTSTORE_CREDENTIALS: kafka_broker_truststore_creds
+      KAFKA_SSL_TRUSTSTORE_LOCATION: broker.truststore.p12
       KAFKA_SSL_TRUSTSTORE_TYPE: PKCS12
+
+networks:
+  kafka_network:
+    driver: bridge
