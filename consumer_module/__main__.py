@@ -18,7 +18,7 @@ async def handle_sigterm(sig: signal.Signals) -> None:
     for n in consumer_list:
         n.shutdown = True
 
-    asyncio.gather(*tasks)
+    await asyncio.gather(*tasks)
 
     amount_consumed = 0
 
@@ -88,9 +88,9 @@ async def main():
             consumer_list.append(consumer)
         except Exception as exc:
             raise exc
+
     print("Ready!", flush=True)
-    await asyncio.gather(*tasks)
-    print(f"\nWARN: {datetime.datetime.now()}: A possible error may have occurred in consume_messages\n", flush=True)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.get_event_loop().create_task(coro = main())
+    asyncio.get_event_loop().run_forever()
