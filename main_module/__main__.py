@@ -143,7 +143,7 @@ def setup_volume(
         return None, exc
 
 def setup_section() -> Exception:
-
+    pass
 
 async def main():
     """
@@ -312,14 +312,6 @@ async def main():
     if exc:
         print(
             f"\nERROR: {datetime.datetime.now()}: An error occurred in stop_containers for moving-container.\n"
-        )
-        raise exc
-
-    exc = delete_containers(moving_container)
-
-    if exc:
-        print(
-            f"\nERROR: {datetime.datetime.now()}: An error occurred in delete_containers for moving-container.\n"
         )
         raise exc
 
