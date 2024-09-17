@@ -2,15 +2,16 @@ import os
 import asyncio
 import signal
 import datetime
+from types import FrameType
 from kafka import TopicPartition
 from python_kafka.core.kafka.consumer.consumer_builder import ConsumerBuilder
 from python_kafka.core.kafka.consumer.consumer import Consumer
 
-def handle_sigterm() -> None:
+def handle_sigterm(sig: signal.Signals, frame: FrameType) -> None:
     """
     Handle SIGTERM
     """
-    print(f"\nINFO: {datetime.datetime.now()}: SIG TERM RECEIVED...\n", flush=True)
+    print(f"\nINFO: {datetime.datetime.now()}: SIGNAL {sig} received...\n", flush=True)
 
     for n in consumer_list:
         n.shutdown = True
