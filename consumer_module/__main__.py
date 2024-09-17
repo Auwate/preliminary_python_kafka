@@ -43,6 +43,11 @@ async def main():
         lambda s=signal.SIGTERM: asyncio.create_task(handle_sigterm(s, loop))
     )
 
+    loop.add_signal_handler(
+        signal.SIGINT,
+        lambda s=signal.SIGINT: asyncio.create_task(handle_sigterm(s, loop))
+    )
+
     bootstrap_servers: str = os.environ["BOOTSTRAP_SERVERS"]
     security_protocol: str = os.environ["SECURITY_PROTOCOL"]
     ssl_check_hostname: bool = os.environ["SSL_CHECK_HOSTNAME"]
@@ -78,7 +83,7 @@ async def main():
             consumer_list.append(consumer)
         except Exception as exc:
             raise exc
-    print("Ready!")
+    print("Ready!", flush=True)
     await asyncio.gather(*tasks)
     print(f"\nWARN: {datetime.datetime.now()}: A possible error may have occurred in consume_messages\n", flush=True)
 
