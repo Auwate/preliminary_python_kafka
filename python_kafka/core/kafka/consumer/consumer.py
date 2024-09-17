@@ -172,7 +172,7 @@ class Consumer:
         """
         return self._consumer
 
-    def consume_messages(self, timeout: int, max_records: int) -> int:
+    async def consume_messages(self, timeout: int, max_records: int) -> int:
         """
         Consumes messages from Kafka and simulates logging or processing in an infinite loop.
 
@@ -200,13 +200,13 @@ class Consumer:
         the shutdown flag is set to True.
         """
         consumed = 0
-        print("Starting...")
+        print("Starting...", flush=True)
         while not self.shutdown:
             try:
                 data = self.consumer.poll(timeout_ms=timeout, max_records=max_records)
                 if data:
                     # Simulate processing delay for each batch of messages
-                    asyncio.sleep(len(data) * 0.005 * random.randint(1, 10))
+                    await asyncio.sleep(len(data) * 0.005 * random.randint(1, 10))
                     print(data)
                     consumed += len(data)
             except Exception as exc:  # pylint: disable=W0718
