@@ -18,7 +18,7 @@ async def handle_sigterm(sig: signal.Signals) -> None:
     for n in consumer_list:
         n.shutdown = True
 
-    await asyncio.gather(*tasks)
+    asyncio.gather(*tasks)
 
     amount_consumed = 0
 
