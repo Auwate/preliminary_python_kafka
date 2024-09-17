@@ -337,7 +337,6 @@ async def main():
     consumer_container, exc = spawn_containers(
         client,
         consumer_image,
-        # "host",
         "host",
         env_args,
         volumes=None,

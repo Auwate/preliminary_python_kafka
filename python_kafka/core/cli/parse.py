@@ -1,91 +1,9 @@
-"""
-A command-line interface for configuring Kafka producers and consumers.
-
-This module provides functionality to create a command-line argument parser and
-to process the arguments for setting up the number of Kafka producers and consumers.
-
-The `CLIOptions` class allows you to specify the number of producers, consumers, 
-bootstrap servers, and other properties through command-line arguments and ensures that 
-these values are properly validated and converted.
-
-Functions:
------------
-create_parser() -> argparse.ArgumentParser
-    Creates and returns an argument parser for command-line arguments.
-
-Classes:
----------
-CLIOptions
-    A class for handling command-line arguments for Kafka configuration.
-
-    Attributes:
-    -----------
-    _producers : int
-        The number of Kafka producers (default: 0).
-    _consumers : int
-        The number of Kafka consumers (default: 0).
-    _bootstrap_server : str
-        The Kafka cluster location (default: 'localhost:9092').
-    _security_protocol : str
-        The security protocol for Kafka communication (default: 'SSL').
-    _ssl_check_hostname : bool
-        Whether to check the hostname in SSL communication (default: False).
-
-    Methods:
-    --------
-    __init__(parser: argparse.ArgumentParser = None, args: list[str] = None) -> None
-        Initializes the CLIOptions instance and processes the provided arguments.
-
-    read_args(parser: argparse.ArgumentParser, args: list[str]) -> None
-        Reads and parses command-line arguments using the provided parser.
-
-    evaluate_input(args: argparse.Namespace) -> None
-        Validates and sets the producer, consumer, and other values from the parsed arguments.
-
-    producers() -> int
-        Returns the number of producers.
-
-    consumers() -> int
-        Returns the number of consumers.
-
-    bootstrap_server() -> str
-        Returns the bootstrap server.
-
-    security_protocol() -> str
-        Returns the security protocol.
-
-    ssl_check_hostname() -> bool
-        Returns the SSL check hostname flag.
-
-    producers.setter(producers: int) -> None
-        Sets the number of producers after validating the input.
-
-    consumers.setter(consumers: int) -> None
-        Sets the number of consumers after validating the input.
-
-    bootstrap_server.setter(bootstrap_server: str) -> None
-        Sets the bootstrap server after validating the input.
-
-    security_protocol.setter(security_protocol: str) -> None
-        Sets the security protocol after validating the input.
-
-    ssl_check_hostname.setter(ssl_check_hostname: bool) -> None
-        Sets the SSL check hostname flag after validating the input.
-"""
 
 import argparse
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """
-    Creates a command-line argument parser.
-
-    Returns:
-    --------
-    argparse.ArgumentParser
-        The argument parser with predefined arguments for producers, consumers,
-        bootstrap server, security protocol, SSL hostname check, group, and topic.
-    """
+   
     parser = argparse.ArgumentParser(
         description="Configure Kafka producers, consumers, and other settings."
     )
@@ -139,85 +57,18 @@ def create_parser() -> argparse.ArgumentParser:
         "--acks",
         help="Type: int | str (Optional) The Kafka topic (default: Test Topic)."
              "Values can be 0, 1 or 'all'",
-        type=int | str,
+        type=str,
     )
 
     return parser
 
 
 class CLIOptions:
-    """
-    A class to handle and validate command-line arguments for Kafka producers, consumers,
-    and additional settings like bootstrap server, security protocol, and SSL hostname check.
-
-    Attributes:
-    -----------
-    _producers : int
-        The number of Kafka producers.
-    _consumers : int
-        The number of Kafka consumers.
-    _bootstrap_server : str
-        The Kafka cluster location.
-    _security_protocol : str
-        The security protocol for Kafka communication.
-    _ssl_check_hostname : bool
-        Whether to check the hostname in SSL communication.
-
-    Methods:
-    --------
-    __init__(parser: argparse.ArgumentParser = None, args: list[str] = None) -> None
-        Initializes the CLIOptions instance. Processes the provided parser and arguments.
-
-    read_args(parser: argparse.ArgumentParser, args: list[str]) -> None
-        Reads and parses command-line arguments using the provided parser.
-
-    evaluate_input(args: argparse.Namespace) -> None
-        Validates and assigns producer, consumer, and additional settings from the parsed arguments.
-
-    producers() -> int
-        Returns the number of producers.
-
-    consumers() -> int
-        Returns the number of consumers.
-
-    bootstrap_server() -> str
-        Returns the bootstrap server.
-
-    security_protocol() -> str
-        Returns the security protocol.
-
-    ssl_check_hostname() -> bool
-        Returns the SSL check hostname flag.
-
-    producers.setter(producers: int) -> None
-        Sets the number of producers after validating the input.
-
-    consumers.setter(consumers: int) -> None
-        Sets the number of consumers after validating the input.
-
-    bootstrap_server.setter(bootstrap_server: str) -> None
-        Sets the bootstrap server after validating the input.
-
-    security_protocol.setter(security_protocol: str) -> None
-        Sets the security protocol after validating the input.
-
-    ssl_check_hostname.setter(ssl_check_hostname: bool) -> None
-        Sets the SSL check hostname flag after validating the input.
-    """
 
     def __init__(
         self, parser: argparse.ArgumentParser = None, args: list[str] = None
     ) -> None:
-        """
-        Initializes the CLIOptions with default values and processes the provided arguments.
 
-        Parameters:
-        -----------
-        parser : argparse.ArgumentParser, optional
-            The argument parser to use. If not provided, a default parser is created.
-        args : list[str], optional
-            A list of command-line arguments to parse. If not provided, defaults to `sys.argv`.
-        """
         self._consumers = 5 # Default values in case nothing is changed
         self._producers = 5
         self._group = "Test_Group"
@@ -229,31 +80,14 @@ class CLIOptions:
         self.read_args(parser, args)
 
     def read_args(self, parser: argparse.ArgumentParser, args: list[str]) -> None:
-        """
-        Reads and parses command-line arguments.
 
-        Parameters:
-        -----------
-        parser : argparse.ArgumentParser
-            The argument parser to use for reading arguments.
-        args : list[str]
-            The list of command-line arguments to parse.
-        """
         if not parser:
             parser = create_parser()
         arguments = parser.parse_args(args)
         self.evaluate_input(arguments)
 
     def evaluate_input(self, args: argparse.Namespace) -> None:
-        """
-        Validates and assigns the values of producers, consumers, group, topic, and other settings
-        from the parsed arguments.
 
-        Parameters:
-        -----------
-        args : argparse.Namespace
-            The parsed command-line arguments.
-        """
         if args.producers is not None:
             self.producers = args.producers
 
