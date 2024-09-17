@@ -51,7 +51,7 @@ async def main():
                     .bootstrap_servers(bootstrap_servers)
                     .security_protocol(security_protocol)
                     .ssl_check_hostname(ssl_check_hostname)
-                    .group(None)
+                    .group(group)
                     .topic(None)
                     .build()
             )
