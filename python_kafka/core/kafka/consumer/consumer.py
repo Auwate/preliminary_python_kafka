@@ -2,7 +2,8 @@
 import asyncio
 import datetime
 import random
-from kafka import KafkaConsumer
+from kafka.consumer.fetcher import ConsumerRecord
+from kafka import KafkaConsumer, TopicPartition
 from ....configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
 
 
@@ -59,11 +60,10 @@ class Consumer:
         consumed = 0
         while not self.shutdown:
             try:
-                data = self.consumer.poll(timeout_ms=timeout, max_records=max_records)
+                data: dict[TopicPartition, list[ConsumerRecord]] = self.consumer.poll(timeout_ms=timeout, max_records=max_records)
                 if data:
                     # Simulate processing delay for each batch of messages
-                    print(data)
-                    consumed += len(data)
+                    consumed += len(data[0])
                 await asyncio.sleep(len(data) * 0.005 * random.randint(1, 10))
             except Exception as exc:  # pylint: disable=W0718
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
