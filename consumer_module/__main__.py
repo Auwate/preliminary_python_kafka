@@ -78,6 +78,9 @@ async def main():
             consumer_list.append(consumer)
         except Exception as exc:
             raise exc
+        print("Ready!")
+        await asyncio.gather(*tasks)
+        print(f"\nWARN: {datetime.datetime.now()}: A possible error may have occurred in consume_messages\n", flush=True)
 
 if __name__ == "__main__":
     asyncio.run(main())
