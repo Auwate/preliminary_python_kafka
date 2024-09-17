@@ -92,10 +92,13 @@ async def main():
     print("Ready!", flush=True)
 
 if __name__ == "__main__":
+    loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
     try:
-        asyncio.get_event_loop().create_task(coro = main())
-        asyncio.get_event_loop().run_forever()
+        loop.create_task(coro = main())
+        loop.run_forever()
+    except KeyboardInterrupt:
+        print("Interrupted.", flush=True)
     except Exception as exc:
-        print(exc)
+        raise exc
     finally:
-        asyncio.get_event_loop().close()
+        loop.close()
