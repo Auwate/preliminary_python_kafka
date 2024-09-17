@@ -30,7 +30,7 @@ jobs:
                 cd build/ssl_dependencies/
                 chmod 777 build.sh
                 sudo ./build.sh
-                cd ..
+                cd ../..
             - name: Install Python dependencies
               run: |
                 python3 -m pip install poetry

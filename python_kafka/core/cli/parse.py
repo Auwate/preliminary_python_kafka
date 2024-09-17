@@ -115,7 +115,7 @@ class CLIOptions:  # pylint: disable=R0902
         self._producers = 5
         self._group = "Test_Group"
         self._topic = "Test_Topic"
-        self._acks: int | str = 0  # Values can be 0, 1, or "all"
+        self._acks: str = 0  # Values can be 0, 1, or "all"
         self._workers: int = 10  # Number of worker threads
         self._bootstrap_server = "localhost:9092"
         self._security_protocol = "SSL"
@@ -195,12 +195,12 @@ class CLIOptions:  # pylint: disable=R0902
         self._workers = int(workers)
 
     @property
-    def acks(self) -> int | str:
+    def acks(self) -> str:
         """
         Returns the acknowledgment pattern for Kafka producers.
 
         Returns:
-            int | str: The acknowledgment pattern.
+            str: The acknowledgment pattern.
         """
         return self._acks
 
@@ -210,15 +210,13 @@ class CLIOptions:  # pylint: disable=R0902
         Sets the acknowledgment pattern after validating the input.
 
         Parameters:
-            acks (int | str): The acknowledgment pattern (0, 1, or 'all').
+            acks (str): The acknowledgment pattern (0, 1, or 'all').
 
         Raises:
             ValueError: If acks is not valid.
         """
-        if not str.isdigit(acks) and not isinstance(acks, str):
+        if not isinstance(acks, str):
             raise ValueError("-A (--acks) must be 0, 1, or all.")
-        if str.isdigit(acks):
-            self._acks = int(acks)
         else:
             self._acks = acks
 
