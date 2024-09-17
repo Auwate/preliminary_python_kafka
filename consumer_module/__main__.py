@@ -17,7 +17,7 @@ from python_kafka.core.kafka.consumer.consumer import Consumer
 async def handle_sigterm(sig: signal.Signals) -> None:
     """
     Asynchronously handles the SIGTERM signal, which is triggered when the application is asked to terminate.
-    
+
     This function:
     1. Logs the received signal and sleeps for 4 seconds to allow for any ongoing operations to settle.
     2. Signals all active Kafka consumers to stop by setting their `shutdown` attribute to True.
@@ -68,16 +68,16 @@ tasks: list[asyncio.Task] = []
 async def main():
     """
     Main entry point for the consumer application.
-    
+
     This function:
     1. Sets up signal handlers for SIGTERM and SIGINT to gracefully shut down the consumers.
     2. Retrieves Kafka connection and configuration details from environment variables.
     3. Initializes the specified number of Kafka consumers, assigns each to a topic partition, and starts consumption tasks.
 
-    The Kafka consumers are created using the `ConsumerBuilder`, and each consumer task is asynchronously 
+    The Kafka consumers are created using the `ConsumerBuilder`, and each consumer task is asynchronously
     scheduled to consume messages from its respective partition.
     """
-    
+
     # Retrieve the current event loop
     loop = asyncio.get_event_loop()
 
@@ -117,10 +117,10 @@ async def main():
                 .topic(None)  # Topic assignment is manual below
                 .build()
             )
-            
+
             # Manually assign the consumer to a specific partition of the topic
             consumer.consumer.assign([TopicPartition(topic, i)])
-            
+
             # Create a task to asynchronously consume messages
             tasks.append(
                 asyncio.create_task(
@@ -129,7 +129,7 @@ async def main():
                     )
                 )
             )
-            
+
             # Keep track of the consumer in the global list
             consumer_list.append(consumer)
         except Exception as exc:  # pylint: disable=W0718
@@ -137,25 +137,21 @@ async def main():
 
 
 if __name__ == "__main__":
-    """
-    Entry point for the script when executed directly. Initializes the asyncio event loop, 
-    schedules the main function, and keeps the event loop running until manually interrupted 
-    or an exception occurs.
-    """
-    
     # Create a new asyncio event loop
     loop: asyncio.AbstractEventLoop = asyncio.new_event_loop()
-    
+
     try:
         # Schedule the main coroutine
         loop.create_task(coro=main())
-        
+
         # Run the event loop indefinitely until a termination signal is received
         loop.run_forever()
     except KeyboardInterrupt:
-        print("Interrupted.", flush=True)  # Gracefully handle keyboard interrupt (Ctrl+C)
-    except Exception as exc:
-        raise exc  # Raise any other exceptions that occur during execution
+        print(
+            "Interrupted.", flush=True
+        )  # Gracefully handle keyboard interrupt (Ctrl+C)
+    except Exception as ex:  # pylint: disable=W0718
+        raise ex  # Raise any other exceptions that occur during execution
     finally:
         # Close the event loop once done
         loop.close()

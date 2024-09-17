@@ -16,7 +16,7 @@ class TestProducerBuilder(unittest.TestCase):
         """
         unittest setUp function
         """
-        self.producer = ProducerBuilder().topic("TEST").volume(1).build()
+        self.producer = ProducerBuilder().topic("TEST").build()
 
     def test_builder_creates_producer(self):
         """

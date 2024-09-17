@@ -1,5 +1,5 @@
 """
-A wrapper class for the KafkaProducer class. Works in tandem with the producerBuilder.py file
+A wrapper class for the KafkaProducer class. Works in tandem with the producerBuilder.py file.
 """
 
 import datetime
@@ -11,6 +11,14 @@ from ....configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_passw
 
 
 class Producer:
+    """
+    A wrapper class around KafkaProducer for sending messages to Kafka topics.
+
+    Attributes:
+        _shutdown (bool): Flag indicating whether the producer is in shutdown state.
+        _topic (str): The Kafka topic where messages will be sent.
+        _producer (KafkaProducer): The KafkaProducer instance used to send messages.
+    """
 
     def __init__(  # pylint: disable=R0913
         self,
@@ -20,6 +28,16 @@ class Producer:
         sec_protocol: str,
         check_hostname: bool,
     ):
+        """
+        Initializes the Producer instance with the provided settings.
+
+        Args:
+            topic (str): The Kafka topic where messages will be sent.
+            acks (int | str): Acknowledgment level (0, 1, or "all").
+            bs_servers (str): Bootstrap servers for Kafka connection.
+            sec_protocol (str): Security protocol for Kafka connection.
+            check_hostname (bool): Whether to check SSL hostname.
+        """
         self._shutdown = False
         self._topic = topic
         self._producer = KafkaProducer(
@@ -35,25 +53,59 @@ class Producer:
 
     @property
     def topic(self) -> str:
-        """Returns the Kafka topic where messages will be sent."""
+        """
+        Returns the Kafka topic where messages will be sent.
+
+        Returns:
+            str: The Kafka topic.
+        """
         return self._topic
 
     @property
     def producer(self) -> KafkaProducer:
-        """Returns the KafkaProducer instance."""
+        """
+        Returns the KafkaProducer instance.
+
+        Returns:
+            KafkaProducer: The KafkaProducer instance.
+        """
         return self._producer
 
     @property
     def shutdown(self) -> bool:
+        """
+        Returns the shutdown state of the producer.
+
+        Returns:
+            bool: The shutdown state.
+        """
         return self._shutdown
 
     @shutdown.setter
     def shutdown(self, shutdown) -> None:
+        """
+        Sets the shutdown state of the producer.
+
+        Args:
+            shutdown (bool): The shutdown state.
+
+        Raises:
+            ValueError: If shutdown is not of type bool.
+        """
         if not isinstance(shutdown, bool):
             raise ValueError("Shutdown is not of type bool.")
         self._shutdown = shutdown
 
     async def send_messages(self, executor: ThreadPoolExecutor) -> int:
+        """
+        Sends messages to the Kafka topic asynchronously.
+
+        Args:
+            executor (ThreadPoolExecutor): The executor to run synchronous operations in.
+
+        Returns:
+            int: The number of messages successfully sent.
+        """
         message_count = 0
         loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
         while not self.shutdown:

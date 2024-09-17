@@ -15,19 +15,6 @@ class TestSuite(unittest.TestCase):
     each attribute of the Producer.
     """
 
-    def test_builder_update_only_volume(self):
-        """
-        Test: Updates only the volume of the ProducerBuilder.
-
-        Verifies:
-        ---------
-        - The volume value is correctly set when modified using the `volume()` method.
-        """
-        producer = ProducerBuilder().volume(100)
-        self.assertEqual(
-            producer._volume, 100, producer._volume  # pylint: disable=W0212
-        )
-
     def test_builder_update_only_topic(self):
         """
         Test: Updates only the topic of the ProducerBuilder.
@@ -94,19 +81,17 @@ class TestSuite(unittest.TestCase):
 
         Verifies:
         ---------
-        - Correct configuration of volume, topic, bootstrap_servers, security_protocol,
+        - Correct configuration of topic, bootstrap_servers, security_protocol,
           and ssl_check_hostname when all attributes are set.
         """
         producer = (
             ProducerBuilder()
-            .volume(1)
             .topic("Test2")
             .bootstrap_servers("localhost")
             .security_protocol("Plaintext")
             .ssl_check_hostname(True)
         )
 
-        self.assertEqual(producer._volume, 1, producer._volume)  # pylint: disable=W0212
         self.assertEqual(
             producer._topic, "Test2", producer._topic  # pylint: disable=W0212
         )
@@ -131,13 +116,10 @@ class TestSuite(unittest.TestCase):
 
         Verifies:
         ---------
-        - The default values for volume, topic, bootstrap_servers, security_protocol,
+        - The default values for topic, bootstrap_servers, security_protocol,
           and ssl_check_hostname are correctly assigned in the ProducerBuilder constructor.
         """
         producer = ProducerBuilder()
-        self.assertEqual(
-            producer._volume, 1000, producer._volume  # pylint: disable=W0212
-        )
         self.assertEqual(
             producer._topic, "Test", producer._topic  # pylint: disable=W0212
         )

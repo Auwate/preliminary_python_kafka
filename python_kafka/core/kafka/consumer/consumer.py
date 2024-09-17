@@ -1,3 +1,8 @@
+"""
+Consumer class for consuming messages from Kafka using the KafkaConsumer from the kafka-python
+library.
+"""
+
 import asyncio
 import datetime
 import random
@@ -7,7 +12,15 @@ from ....configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_passw
 
 
 class Consumer:
-    def __init__(
+    """
+    A Kafka consumer that consumes messages from a specified Kafka topic.
+
+    Attributes:
+        _shutdown (bool): Flag indicating whether the consumer should shut down.
+        _consumer (KafkaConsumer): The KafkaConsumer instance used for message consumption.
+    """
+
+    def __init__(  # pylint: disable=R0913
         self,
         bs_servers: str,
         sec_protocol: str,
@@ -15,6 +28,16 @@ class Consumer:
         topic: str,
         group: str,
     ) -> None:
+        """
+        Initializes the Consumer with Kafka server settings and SSL configurations.
+
+        Args:
+            bs_servers (str): Bootstrap servers for Kafka connection.
+            sec_protocol (str): Security protocol for Kafka connection.
+            ssl_check_hostname (bool): Whether to check SSL hostname.
+            topic (str): Kafka topic to consume messages from. If empty, subscribes to all topics.
+            group (str): Kafka consumer group ID.
+        """
         self._shutdown = False
 
         if not topic:
@@ -43,19 +66,50 @@ class Consumer:
 
     @property
     def shutdown(self) -> bool:
+        """
+        Gets the shutdown flag.
+
+        Returns:
+            bool: The shutdown flag.
+        """
         return self._shutdown
 
     @shutdown.setter
     def shutdown(self, shutdown: bool) -> None:
+        """
+        Sets the shutdown flag.
+
+        Args:
+            shutdown (bool): The shutdown flag.
+
+        Raises:
+            ValueError: If shutdown is not of type bool.
+        """
         if not isinstance(shutdown, bool):
             raise ValueError("Shutdown flag must be a boolean value.")
         self._shutdown = shutdown
 
     @property
     def consumer(self) -> KafkaConsumer:
+        """
+        Gets the KafkaConsumer instance.
+
+        Returns:
+            KafkaConsumer: The KafkaConsumer instance.
+        """
         return self._consumer
 
     async def consume_messages(self, timeout: int, max_records: int) -> int:
+        """
+        Consumes messages from Kafka asynchronously.
+
+        Args:
+            timeout (int): The maximum amount of time to wait for messages, in milliseconds.
+            max_records (int): The maximum number of records to return in a single call.
+
+        Returns:
+            int: The number of consumed messages.
+        """
         consumed = 0
         while not self.shutdown:
             try:

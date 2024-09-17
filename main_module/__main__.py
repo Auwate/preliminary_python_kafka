@@ -1,5 +1,5 @@
 """
-Main file that runs the overall logic
+Main file that runs the overall logic.
 """
 
 import os
@@ -24,6 +24,18 @@ from python_kafka.core.cli.parse import CLIOptions
 def build_image(
     client: docker.DockerClient, path: str, dockerfile: str, tag: str
 ) -> tuple[Image, Exception]:
+    """
+    Builds a Docker image from the specified path and Dockerfile.
+
+    Args:
+        client (docker.DockerClient): The Docker client instance.
+        path (str): The path to the build context.
+        dockerfile (str): The name of the Dockerfile.
+        tag (str): The tag to assign to the built image.
+
+    Returns:
+        tuple[Image, Exception]: The built image and any exception encountered.
+    """
     try:
         image, logs = client.images.build(
             path=path, dockerfile=dockerfile, tag=tag, rm=True, nocache=True
@@ -47,6 +59,21 @@ def spawn_containers(
     mounts: docker.types.Mount = None,
     delete: bool = False,
 ) -> tuple[Container, Exception]:
+    """
+    Spawns a Docker container from the specified image.
+
+    Args:
+        client (docker.DockerClient): The Docker client instance.
+        image (Image): The Docker image to use for the container.
+        network (str): The network to attach the container to.
+        environment_variables (dict[str, str | int | bool]): Environment variables for the container.
+        volumes (Volume, optional): Volumes to attach to the container.
+        mounts (docker.types.Mount, optional): Mounts to attach to the container.
+        delete (bool, optional): Whether to automatically remove the container after stopping.
+
+    Returns:
+        tuple[Container, Exception]: The spawned container and any exception encountered.
+    """
     if mounts:
         mounts = [mounts]
     else:
@@ -72,6 +99,17 @@ def spawn_containers(
 
 
 def setup_topics(topic_name: str, num_partitions: int, admin: Admin) -> Exception:
+    """
+    Sets up a Kafka topic with the specified number of partitions if it does not already exist.
+
+    Args:
+        topic_name (str): The name of the topic to set up.
+        num_partitions (int): The number of partitions for the topic.
+        admin (Admin): The Admin instance for Kafka administration.
+
+    Returns:
+        Exception: Any exception encountered while setting up the topic.
+    """
     if admin.get_topic_details(topic_name) is None:
         success, exc = admin.create_topic(
             topic_name=topic_name,
@@ -87,6 +125,15 @@ def setup_topics(topic_name: str, num_partitions: int, admin: Admin) -> Exceptio
 async def stop_containers(
     container: Container,
 ) -> Exception:
+    """
+    Stops the specified Docker container.
+
+    Args:
+        container (Container): The container to stop.
+
+    Returns:
+        Exception: Any exception encountered while stopping the container.
+    """
     try:
         container.stop(timeout=30)
     except Exception as exc:  # pylint: disable=W0718
@@ -97,6 +144,16 @@ async def stop_containers(
 def check_image_exists(
     client: docker.DockerClient, tag: str
 ) -> tuple[Image, Exception]:
+    """
+    Checks if a Docker image with the specified tag exists.
+
+    Args:
+        client (docker.DockerClient): The Docker client instance.
+        tag (str): The tag of the image to check.
+
+    Returns:
+        tuple[Image, Exception]: The Docker image and any exception encountered.
+    """
     try:
         image: Image = client.images.get(tag)
     except docker.errors.ImageNotFound:
@@ -107,6 +164,15 @@ def check_image_exists(
 
 
 def gather_logs(container: Container) -> tuple[str, Exception]:
+    """
+    Gathers logs from the specified Docker container.
+
+    Args:
+        container (Container): The container to gather logs from.
+
+    Returns:
+        tuple[str, Exception]: The container logs and any exception encountered.
+    """
     try:
         logs = container.logs().decode()
     except docker.errors.APIError as exc:
@@ -115,6 +181,15 @@ def gather_logs(container: Container) -> tuple[str, Exception]:
 
 
 def delete_containers(container: Container) -> Exception:
+    """
+    Deletes the specified Docker container.
+
+    Args:
+        container (Container): The container to delete.
+
+    Returns:
+        Exception: Any exception encountered while deleting the container.
+    """
     try:
         if container.status == "exited":
             raise docker.errors.APIError(
@@ -129,6 +204,15 @@ def delete_containers(container: Container) -> Exception:
 def setup_volume(
     client: docker.DockerClient,
 ) -> tuple[docker.models.volumes.Volume, Exception]:
+    """
+    Sets up a Docker volume named 'secrets_volume'.
+
+    Args:
+        client (docker.DockerClient): The Docker client instance.
+
+    Returns:
+        tuple[docker.models.volumes.Volume, Exception]: The Docker volume and any exception encountered.
+    """
     try:
         client.volumes.get("secrets_volume").remove()
         return client.volumes.create("secrets_volume"), None
@@ -142,16 +226,26 @@ def setup_volume(
     except Exception as exc:
         return None, exc
 
-def setup_section() -> Exception:
-    pass
 
-async def main():
+async def main():  # pylint: disable=R0914,R0912,R0915
     """
-    Explanation:
-        The main method is responsible for generating messages, creating consumers, preparing
-        the threads to poll for messages, and scheduling the async logging functions.
-    """
+    Main function responsible for orchestrating the overall logic. This includes:
+    - Generating messages.
+    - Creating consumers and producers.
+    - Setting up Docker containers.
+    - Managing topic setup in Kafka.
+    - Moving secrets.
+    - Starting containers.
+    - Gathering logs and cleaning up.
 
+    Execution flow:
+    1. Build or retrieve Docker images for producer and consumer.
+    2. Set up Kafka topic.
+    3. Create and manage Docker volumes.
+    4. Spawn and manage Docker containers for moving secrets, producers, and consumers.
+    5. Wait for operations to complete.
+    6. Gather logs from containers and clean up resources.
+    """
     cli = CLIOptions()
     env_args: dict[str, str | int | bool] = {
         "PRODUCERS": cli.producers,
@@ -315,9 +409,7 @@ async def main():
         )
         raise exc
 
-    print(f"\nINFO: {datetime.datetime.now()}: Starting containers...\n")
-
-    print(f"\nINFO: {datetime.datetime.now()}: 1: Producer...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Starting producer container...\n")
 
     producer_container, exc = spawn_containers(
         client,
@@ -338,7 +430,7 @@ async def main():
         )
         raise exc
 
-    print(f"\nINFO: {datetime.datetime.now()}: 2: Consumer...\n")
+    print(f"\nINFO: {datetime.datetime.now()}: Starting consumer container...\n")
 
     consumer_container, exc = spawn_containers(
         client,
@@ -359,11 +451,13 @@ async def main():
         )
         raise exc
 
+    print(f"\nINFO: {datetime.datetime.now()}: Setting up containers...\n")
+
     time.sleep(30)
 
     print(f"\nINFO: {datetime.datetime.now()}: Waiting 60 seconds for results...\n")
 
-    time.sleep(20)
+    time.sleep(60)
 
     print(f"\nINFO: {datetime.datetime.now()}: Sending terminate signal...\n")
 
