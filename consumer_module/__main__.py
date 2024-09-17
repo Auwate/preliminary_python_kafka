@@ -31,6 +31,8 @@ async def handle_sigterm(sig: signal.Signals) -> None:
 
     print(f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n", flush=True)
 
+    time.sleep(5)
+
     asyncio.get_event_loop().close()
 
 
