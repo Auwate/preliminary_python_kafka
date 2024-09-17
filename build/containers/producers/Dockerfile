@@ -1,15 +1,16 @@
+# Slim-bookworm was chosen for the Debian interface with a minimal size
 FROM python:3.12-slim-bookworm
 
+# Update dependencies
 RUN apt update && apt upgrade -y
 RUN apt install git -y
 
+# Organize the application's install
 WORKDIR /home/program
 
-RUN git clone https://github.com/Auwate/preliminary_python_kafka.git -b testing
-RUN python3 -m pip install poetry
+# Copy the install script
+COPY producer.sh .
+RUN chmod +x producer.sh
 
-WORKDIR /home/program/preliminary_python_kafka
-
-RUN python3 -m poetry install --no-root
-
-CMD [ "python3", "-m", "poetry", "run", "python3", "-m", "producer_module" ]
+# Run the install script
+CMD [ "./producer.sh" ]
