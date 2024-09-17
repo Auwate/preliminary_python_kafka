@@ -23,7 +23,7 @@ class Producer:
     def __init__(  # pylint: disable=R0913
         self,
         topic: str,
-        acks: int | str,
+        acks: str,
         bs_servers: str,
         sec_protocol: str,
         check_hostname: bool,
@@ -33,7 +33,7 @@ class Producer:
 
         Args:
             topic (str): The Kafka topic where messages will be sent.
-            acks (int | str): Acknowledgment level (0, 1, or "all").
+            acks (str): Acknowledgment level (0, 1, or "all").
             bs_servers (str): Bootstrap servers for Kafka connection.
             sec_protocol (str): Security protocol for Kafka connection.
             check_hostname (bool): Whether to check SSL hostname.

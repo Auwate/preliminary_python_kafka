@@ -11,7 +11,7 @@ class ProducerBuilder:
 
     Attributes:
         _topic (str): The Kafka topic for the producer.
-        _acks (int | str): Acknowledgment level for the producer (0, 1, or "all").
+        _acks (str): Acknowledgment level for the producer (0, 1, or "all").
         _bootstrap_servers (str): Bootstrap servers for Kafka connection.
         _security_protocol (str): Security protocol for Kafka connection.
         _ssl_check_hostname (bool): Whether to check SSL hostname.
@@ -22,17 +22,17 @@ class ProducerBuilder:
         Initializes the ProducerBuilder with default settings.
         """
         self._topic = "Test"
-        self._acks: int | str = 0  # Can be 0, 1, or "all"
+        self._acks: str = "0"  # Can be 0, 1, or "all"
         self._bootstrap_servers = "localhost:9092"
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False
 
-    def acks(self, ack: int | str) -> "ProducerBuilder":
+    def acks(self, ack: str) -> "ProducerBuilder":
         """
         Sets the acknowledgment level for the producer.
 
         Args:
-            ack (int | str): Acknowledgment level (0, 1, or "all").
+            ack (str): Acknowledgment level (0, 1, or "all").
 
         Returns:
             ProducerBuilder: The current instance of ProducerBuilder.
