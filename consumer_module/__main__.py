@@ -58,7 +58,7 @@ async def handle_sigterm(sig: signal.Signals) -> None:
     print(
         f"\nINFO: {datetime.datetime.now()}: Amount consumed - {total_consumed}\n",
         f"\nINFO: {datetime.datetime.now()}: Average consumed per second -",
-        f"{total_per_second // len(consumer_list)}\n"
+        f"{total_per_second // len(consumer_list)}\n",
         flush=True,
     )
 
