@@ -27,9 +27,14 @@ class ProducerBuilder:
         self._security_protocol = "SSL"
         self._ssl_check_hostname = False
 
+    # DO NOT USE
     def acks(self, ack: str) -> "ProducerBuilder":
         """
         Sets the acknowledgment level for the producer.
+
+        IMPORTANT:
+            The acks attribute causes the KafkaProducer to timeout. Further
+            investigation needs to be determined.
 
         Args:
             ack (str): Acknowledgment level (0, 1, or "all").

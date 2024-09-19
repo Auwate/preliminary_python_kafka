@@ -8,6 +8,15 @@ To get started, please follow the `Prerequisities` header below and then to `Run
 
 This application was built on a Unix environment, so directions are going to be Unix-centric. In addition, this application may behave as intended on a Windows host.
 
+# Features
+
+- Environment parameters
+  - Can change the amount of `consumers`, `producers`, `worker threads`
+- Amount produced
+- Amount produced per second
+- Amount consumed
+- Amount consumed per second
+
 # Prerequisities
 
 ## Virtual environment
@@ -92,6 +101,11 @@ This project uses `Tox` for standardized and automated testing. To use this, ple
 If you would like to specify a specific test to run, use `poetry run tox -e <TEST_NAME>`
 
 # Update History
+
+## 09/19/2024
+
+- Added average messages sent/consumed
+- Addressed issue regarding acks
 
 ## 09/17/2024
 
