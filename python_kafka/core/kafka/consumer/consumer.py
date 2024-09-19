@@ -129,4 +129,4 @@ class Consumer:
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
                 await asyncio.sleep(1 * 0.005 * random.randint(1, 10))
 
-        return consumed, consumed // (datetime.datetime.now() - start)
+        return consumed, consumed // (datetime.datetime.now() - start).total_seconds()

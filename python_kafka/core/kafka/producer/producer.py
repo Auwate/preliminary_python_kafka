@@ -126,4 +126,4 @@ class Producer:
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
 
         self.producer.flush()
-        return message_count, message_count // (datetime.datetime.now() - start)
+        return message_count, message_count // (datetime.datetime.now() - start).total_seconds()
