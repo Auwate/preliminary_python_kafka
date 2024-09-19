@@ -26,7 +26,7 @@ class Producer:
         self,
         topic: str,
         bs_servers: str,
-        acks: Union[str, int],
+        acks: Union[str, int],  # pylint: disable=W0613
         sec_protocol: str,
         check_hostname: bool,
     ):
@@ -129,4 +129,7 @@ class Producer:
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
 
         self.producer.flush()
-        return message_count, message_count // (datetime.datetime.now() - start).total_seconds()
+        return (
+            message_count,
+            message_count // (datetime.datetime.now() - start).total_seconds(),
+        )
