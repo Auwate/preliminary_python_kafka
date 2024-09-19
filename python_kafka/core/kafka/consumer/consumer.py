@@ -99,7 +99,7 @@ class Consumer:
         """
         return self._consumer
 
-    async def consume_messages(self, timeout: int, max_records: int) -> int:
+    async def consume_messages(self, timeout: int, max_records: int) -> tuple[int, int]:
         """
         Consumes messages from Kafka asynchronously.
 
@@ -108,9 +108,13 @@ class Consumer:
             max_records (int): The maximum number of records to return in a single call.
 
         Returns:
-            int: The number of consumed messages.
+            tuple:
+                int: The number of consumed messages.
+                int: The number of messages consumed per second (rounded down)
         """
         consumed = 0
+        start = datetime.datetime.now()
+
         while not self.shutdown:
             try:
                 data: dict[TopicPartition, list[ConsumerRecord]] = self.consumer.poll(
@@ -125,4 +129,4 @@ class Consumer:
                 print(f"\nERROR: {datetime.datetime.now()}: {exc}\n")
                 await asyncio.sleep(1 * 0.005 * random.randint(1, 10))
 
-        return consumed
+        return consumed, consumed // (datetime.datetime.now() - start)

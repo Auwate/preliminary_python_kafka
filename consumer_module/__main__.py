@@ -40,17 +40,25 @@ async def handle_sigterm(sig: signal.Signals) -> None:
     # Await completion of all tasks
     await asyncio.gather(*tasks)
 
+    total_consumed = 0
+    total_per_second = 0
+
     amount_consumed = 0
+    messages_per_second = 0
 
     try:
         # Aggregate the total number of consumed messages
         for task in tasks:
-            amount_consumed += task.result()
+            amount_consumed, messages_per_second = task.result()
+            total_consumed += amount_consumed
+            total_per_second += messages_per_second
     except Exception as exc:  # pylint: disable=W0718
         raise exc
 
     print(
-        f"\nINFO: {datetime.datetime.now()}: Amount consumed - {amount_consumed}\n",
+        f"\nINFO: {datetime.datetime.now()}: Amount consumed - {total_consumed}\n",
+        f"\nINFO: {datetime.datetime.now()}: Average consumed per second -",
+        f"{total_per_second // len(consumer_list)}\n"
         flush=True,
     )
 

@@ -41,16 +41,24 @@ async def handle_sigterm(sig: signal.Signals) -> None:
     await asyncio.gather(*tasks)
 
     amount_sent = 0
+    amount_per_second = 0
+
+    total_sent = 0
+    total_per_second = 0
 
     try:
         # Aggregate the total number of messages sent
         for task in tasks:
-            amount_sent += task.result()
+            amount_sent, amount_per_second = task.result()
+            total_sent += amount_sent
+            total_per_second += amount_per_second
     except Exception as exc:
         raise exc
 
     print(
-        f"\nINFO: {datetime.datetime.now()}: Amount sent - {amount_sent}\n",
+        f"\nINFO: {datetime.datetime.now()}: Amount sent - {total_sent}\n",
+        f"\nINFO: {datetime.datetime.now()}: Average sent per second -",
+        f"{total_per_second // len(producer_list)}\n"
         flush=True,
     )
 
@@ -98,13 +106,6 @@ async def main():
     # Number of Kafka producers to instantiate
     producers: int = int(os.environ["PRODUCERS"])
 
-    # Kafka producer acknowledgment setting, handling both int and string ("all")
-    acks: int | str = (
-        str(os.environ["ACKS"])
-        if os.environ["ACKS"] == "all"
-        else int(os.environ["ACKS"])
-    )
-
     # Kafka topic to which the producers will send messages
     topic: str = os.environ["TOPIC"]
 
@@ -127,7 +128,6 @@ async def main():
                 .security_protocol(security_protocol)
                 .ssl_check_hostname(ssl_check_hostname)
                 .topic(topic)
-                .acks(acks)
                 .build()
             )
 
