@@ -8,6 +8,15 @@ To get started, please follow the `Prerequisities` header below and then to `Run
 
 This application was built on a Unix environment, so directions are going to be Unix-centric. In addition, this application may behave as intended on a Windows host.
 
+# Features
+
+- Environment parameters
+  - Can change the amount of `consumers`, `producers`, `worker threads`
+- Amount produced
+- Amount produced per second
+- Amount consumed
+- Amount consumed per second
+
 # Prerequisities
 
 ## Virtual environment
