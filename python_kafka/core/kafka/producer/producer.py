@@ -44,7 +44,7 @@ class Producer:
             bootstrap_servers=bs_servers,
             security_protocol=sec_protocol,
             ssl_check_hostname=check_hostname,
-            acks=acks,
+            # acks=acks,
             ssl_cafile=ssl_cafile,
             ssl_certfile=ssl_certfile,
             ssl_keyfile=ssl_keyfile,
