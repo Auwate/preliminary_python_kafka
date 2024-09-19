@@ -3,7 +3,7 @@ REPO_NAME="https://github.com/Auwate/preliminary_python_kafka.git"
 DIR_NAME="preliminary_python_kafka"
 
 # Clone the repo
-git clone "$REPO_NAME"
+git clone "$REPO_NAME" -b fixes
 cd "$DIR_NAME"
 
 # Copy the volume into the application
