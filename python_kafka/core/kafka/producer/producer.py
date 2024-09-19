@@ -5,6 +5,8 @@ A wrapper class for the KafkaProducer class. Works in tandem with the producerBu
 import datetime
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from typing import Union
+
 from kafka import KafkaProducer, errors
 from kafka.producer.future import FutureRecordMetadata, RecordMetadata
 from ....configs.configs import ssl_cafile, ssl_certfile, ssl_keyfile, ssl_password
@@ -24,6 +26,7 @@ class Producer:
         self,
         topic: str,
         bs_servers: str,
+        acks: Union[str, int],
         sec_protocol: str,
         check_hostname: bool,
     ):

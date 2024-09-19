@@ -93,6 +93,11 @@ If you would like to specify a specific test to run, use `poetry run tox -e <TES
 
 # Update History
 
+## 09/19/2024
+
+- Added average messages sent/consumed
+- Addressed issue regarding acks
+
 ## 09/17/2024
 
 MAJOR UPDATE
