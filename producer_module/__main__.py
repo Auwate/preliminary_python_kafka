@@ -98,12 +98,12 @@ async def main():
     # Number of Kafka producers to instantiate
     producers: int = int(os.environ["PRODUCERS"])
 
-    # # Kafka producer acknowledgment setting, handling both int and string ("all")
-    # acks: int | str = (
-    #     str(os.environ["ACKS"])
-    #     if os.environ["ACKS"] == "all"
-    #     else int(os.environ["ACKS"])
-    # )
+    # Kafka producer acknowledgment setting, handling both int and string ("all")
+    acks: int | str = (
+        str(os.environ["ACKS"])
+        if os.environ["ACKS"] == "all"
+        else int(os.environ["ACKS"])
+    )
 
     # Kafka topic to which the producers will send messages
     topic: str = os.environ["TOPIC"]
